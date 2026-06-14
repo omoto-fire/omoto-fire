@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="P数管理">
+<title>大本 P数管理</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Share+Tech+Mono&display=swap');
+  :root {
+    --bg:#0a0e1a; --surface:#111827; --surface2:#1a2235;
+    --border:#1e2d45; --accent:#00d4aa; --accent2:#3b82f6;
+    --text:#e2e8f0; --muted:#64748b; --green:#10b981; --red:#f43f5e;
+    --gold:#f59e0b; --teamA:#00d4aa; --teamB:#3b82f6;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:14px;min-height:100vh;padding-bottom:80px;}
+
+  .header{background:linear-gradient(135deg,#0a0e1a,#0f1e3a);border-bottom:1px solid var(--border);padding:14px 16px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;}
+  .header-title{font-family:'Share Tech Mono',monospace;font-size:15px;color:var(--accent);letter-spacing:1px;}
+  .header-sub{font-size:10px;color:var(--muted);margin-top:2px;}
+  .owner-btn{font-size:10px;padding:4px 10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;}
+  .owner-btn.active{border-color:var(--gold);color:var(--gold);}
+
+  .tabs{display:flex;gap:4px;padding:10px 16px 0;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{padding:8px 14px;border-radius:8px 8px 0 0;font-size:12px;font-weight:500;cursor:pointer;border:1px solid transparent;border-bottom:none;color:var(--muted);white-space:nowrap;background:transparent;transition:all 0.2s;}
+  .tab.active{background:var(--surface);color:var(--accent);border-color:var(--border);border-bottom:1px solid var(--surface);margin-bottom:-1px;}
+
+  .main{padding:16px;}
+  .tab-content{display:none;}
+  .tab-content.active{display:block;}
+
+  /* TEAM BATTLE */
+  .battle-card{background:linear-gradient(135deg,#0f1e3a,#0a0e1a);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:16px;position:relative;overflow:hidden;}
+  .battle-title{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;text-align:center;}
+  .battle-teams{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-bottom:14px;}
+  .battle-team{text-align:center;}
+  .battle-team-label{font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:4px;}
+  .battle-team-label-a{color:var(--teamA);}
+  .battle-team-label-b{color:var(--teamB);}
+  .battle-team-members{font-size:9px;color:var(--muted);margin-bottom:8px;line-height:1.6;}
+  .battle-points{font-family:'Share Tech Mono',monospace;font-size:42px;font-weight:700;line-height:1;}
+  .battle-points-a{color:var(--teamA);}
+  .battle-points-b{color:var(--teamB);}
+  .battle-unit{font-size:13px;color:var(--muted);margin-top:4px;}
+  .battle-vs{font-family:'Share Tech Mono',monospace;font-size:18px;color:var(--muted);text-align:center;}
+  .battle-bar-wrap{margin-top:4px;}
+  .battle-bar-bg{height:24px;background:var(--border);border-radius:12px;overflow:hidden;display:flex;}
+  .battle-bar-a{background:linear-gradient(90deg,#00d4aa,#06b6d4);height:100%;transition:width 0.8s ease;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;min-width:30px;}
+  .battle-bar-b{background:linear-gradient(90deg,#3b82f6,#6366f1);height:100%;transition:width 0.8s ease;display:flex;align-items:center;padding-left:8px;min-width:30px;}
+  .battle-bar-label{font-size:11px;font-weight:700;color:#fff;}
+  .battle-lead{text-align:center;margin-top:10px;font-size:12px;font-weight:600;}
+  .lead-a{color:var(--teamA);}
+  .lead-b{color:var(--teamB);}
+  .lead-even{color:var(--muted);}
+
+  /* PERIOD TABS */
+  .period-tabs{display:flex;gap:6px;margin-bottom:14px;}
+  .period-tab{flex:1;text-align:center;padding:7px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);color:var(--muted);background:transparent;transition:all 0.2s;}
+  .period-tab.active{background:var(--surface2);border-color:var(--accent);color:var(--accent);}
+
+  /* DAILY LOG */
+  .daily-log{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px;}
+  .daily-log-header{display:grid;grid-template-columns:80px 1fr 60px 60px 60px;gap:4px;padding:8px 12px;background:var(--surface2);font-size:10px;color:var(--muted);font-weight:600;letter-spacing:0.5px;}
+  .daily-log-row{display:grid;grid-template-columns:80px 1fr 60px 60px 60px;gap:4px;padding:9px 12px;border-top:1px solid var(--border);font-size:12px;align-items:center;}
+  .daily-log-row:hover{background:var(--surface2);}
+  .log-date{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);}
+  .log-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;display:flex;}
+  .log-bar-a{background:var(--teamA);height:100%;}
+  .log-bar-b{background:var(--teamB);height:100%;}
+  .log-pt-a{font-family:'Share Tech Mono',monospace;font-weight:700;color:var(--teamA);text-align:right;}
+  .log-pt-b{font-family:'Share Tech Mono',monospace;font-weight:700;color:var(--teamB);text-align:right;}
+  .log-winner{text-align:center;font-size:11px;}
+
+  /* SUMMARY */
+  .summary-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
+  .summary-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;}
+  .summary-val{font-family:'Share Tech Mono',monospace;font-size:18px;font-weight:700;color:var(--accent);}
+  .summary-label{font-size:9px;color:var(--muted);margin-top:3px;}
+
+  .section-title{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+  .section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  /* RANK CARD */
+  .rank-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;position:relative;overflow:hidden;}
+  .rank-card.rank-1{border-color:var(--gold);}
+  .rank-card.rank-2{border-color:#94a3b8;}
+  .rank-card.rank-3{border-color:#cd7c3a;}
+  .rank-num{font-family:'Share Tech Mono',monospace;font-size:20px;font-weight:700;width:28px;text-align:center;flex-shrink:0;}
+  .rank-1 .rank-num{color:var(--gold);}
+  .rank-2 .rank-num{color:#94a3b8;}
+  .rank-3 .rank-num{color:#cd7c3a;}
+  .rank-num-other{color:var(--muted);}
+  .rank-info{flex:1;}
+  .rank-name{font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px;}
+  .team-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .rank-bar-wrap{margin-top:5px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+  .rank-bar{height:100%;border-radius:2px;transition:width 0.8s ease;}
+  .rank-right{text-align:right;flex-shrink:0;}
+  .rank-pcount{font-family:'Share Tech Mono',monospace;font-size:15px;font-weight:700;}
+  .rank-pct{font-size:10px;color:var(--muted);margin-top:2px;}
+  .rank-medal{position:absolute;right:10px;top:8px;font-size:18px;opacity:0.12;}
+
+  /* MODAL */
+  .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:200;align-items:flex-end;}
+  .modal-bg.open{display:flex;}
+  .modal{background:var(--surface);border-radius:20px 20px 0 0;padding:20px 16px 32px;width:100%;max-height:93vh;overflow-y:auto;}
+  .modal-title{font-size:15px;font-weight:700;color:var(--accent);margin-bottom:4px;}
+  .modal-sub{font-size:11px;color:var(--muted);margin-bottom:14px;}
+  .input-group{margin-bottom:12px;}
+  .input-label{font-size:11px;color:var(--muted);margin-bottom:5px;display:block;}
+  .input-field{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:10px;font-family:'Share Tech Mono',monospace;font-size:13px;outline:none;}
+  .input-field:focus{border-color:var(--accent);}
+  .input-hint{font-size:10px;color:var(--muted);margin-top:3px;}
+  .input-field.text-input{font-family:'Noto Sans JP',sans-serif;}
+
+  .team-header{padding:8px 12px;border-radius:8px;margin:10px 0 8px;font-size:12px;font-weight:700;}
+  .team-header-a{background:rgba(0,212,170,0.1);color:var(--teamA);}
+  .team-header-b{background:rgba(59,130,246,0.1);color:var(--teamB);}
+
+  .emp-row{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:6px;}
+  .emp-row-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .emp-row-name{font-weight:700;font-size:13px;}
+  .emp-rule-badge{font-size:9px;color:var(--accent);background:rgba(0,212,170,0.1);padding:2px 6px;border-radius:8px;}
+  .emp-fields{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+  .emp-field-wrap{display:flex;flex-direction:column;gap:3px;}
+  .emp-field-label{font-size:9px;color:var(--muted);}
+
+  .owner-section{background:rgba(245,158,11,0.06);border:1px solid var(--gold);border-radius:10px;padding:12px;margin-bottom:12px;}
+  .owner-section-title{font-size:11px;color:var(--gold);font-weight:700;margin-bottom:10px;}
+  .unit-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .unit-name{font-weight:600;font-size:12px;width:56px;flex-shrink:0;}
+  .unit-field{width:90px;background:var(--surface);border:1px solid var(--border);color:var(--gold);padding:7px 10px;border-radius:8px;font-family:'Share Tech Mono',monospace;font-size:13px;outline:none;text-align:right;}
+  .unit-field:focus{border-color:var(--gold);}
+  .unit-label{font-size:9px;color:var(--muted);}
+
+  .btn{padding:12px 20px;border-radius:10px;border:none;font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;width:100%;}
+  .btn-primary{background:var(--accent);color:#0a0e1a;margin-bottom:8px;}
+  .btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted);}
+  .btn:active{transform:scale(0.97);}
+
+  .fab{position:fixed;bottom:24px;right:20px;width:56px;height:56px;border-radius:50%;background:var(--accent);border:none;font-size:24px;cursor:pointer;box-shadow:0 4px 20px rgba(0,212,170,0.4);z-index:100;display:flex;align-items:center;justify-content:center;}
+  .fab:active{transform:scale(0.93);}
+
+  .date-selector{display:flex;gap:8px;margin-bottom:14px;align-items:center;}
+  .date-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;}
+  .date-display{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--text);flex:1;text-align:center;}
+
+  .chart-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;}
+  canvas{width:100% !important;}
+
+  .lock-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;align-items:center;justify-content:center;}
+  .lock-modal.open{display:flex;}
+  .lock-box{background:var(--surface);border:1px solid var(--gold);border-radius:16px;padding:28px 24px;width:280px;text-align:center;}
+  .lock-title{font-size:15px;font-weight:700;color:var(--gold);margin-bottom:6px;}
+  .lock-sub{font-size:11px;color:var(--muted);margin-bottom:16px;}
+  .lock-input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:12px;border-radius:10px;font-family:'Share Tech Mono',monospace;font-size:20px;text-align:center;letter-spacing:6px;outline:none;margin-bottom:12px;}
+  .lock-input:focus{border-color:var(--gold);}
+  .lock-err{color:var(--red);font-size:11px;margin-bottom:8px;min-height:16px;}
+
+  .empty{text-align:center;padding:32px 16px;color:var(--muted);font-size:13px;}
+  .empty-icon{font-size:30px;margin-bottom:8px;}
+  .badge{display:inline-block;font-size:9px;padding:2px 6px;border-radius:8px;font-weight:600;margin-left:4px;}
+  .badge-note{background:rgba(245,158,11,0.15);color:var(--gold);}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">大本 P数管理</div>
+    <div class="header-sub" id="headerSub">-</div>
+  </div>
+  <button class="owner-btn" id="ownerBtn" onclick="toggleOwner()">👑 社長</button>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('battle',this)">⚔️ チーム戦</div>
+  <div class="tab" onclick="switchTab('today',this)">📊 今日</div>
+  <div class="tab" onclick="switchTab('monthly',this)">📅 月次</div>
+  <div class="tab" onclick="switchTab('chart',this)">📈 グラフ</div>
+</div>
+
+<div class="main">
+
+<!-- ===== BATTLE ===== -->
+<div class="tab-content active" id="tab-battle">
+  <div class="period-tabs">
+    <div class="period-tab active" onclick="switchPeriod('month',this)">今月</div>
+    <div class="period-tab" onclick="switchPeriod('year',this)">今年累積</div>
+  </div>
+
+  <div class="battle-card">
+    <div class="battle-title" id="battleTitle">月間チームポイント対決</div>
+    <div class="battle-teams">
+      <div class="battle-team">
+        <div class="battle-team-label battle-team-label-a">TEAM A</div>
+        <div class="battle-team-members">泉原 城戸 都築<br>杉原 西崎</div>
+        <div class="battle-points battle-points-a" id="battlePtA">0</div>
+        <div class="battle-unit">ポイント</div>
+      </div>
+      <div class="battle-vs">VS</div>
+      <div class="battle-team">
+        <div class="battle-team-label battle-team-label-b">TEAM B</div>
+        <div class="battle-team-members">山﨑 雅人<br>大本汐 都田</div>
+        <div class="battle-points battle-points-b" id="battlePtB">0</div>
+        <div class="battle-unit">ポイント</div>
+      </div>
+    </div>
+    <div class="battle-bar-wrap">
+      <div class="battle-bar-bg">
+        <div class="battle-bar-a" id="battleBarA" style="width:50%"><span class="battle-bar-label" id="battleBarLabelA">50</span></div>
+        <div class="battle-bar-b" id="battleBarB" style="width:50%"><span class="battle-bar-label" id="battleBarLabelB">50</span></div>
+      </div>
+    </div>
+    <div class="battle-lead" id="battleLead">データなし</div>
+  </div>
+
+  <!-- 日別ログ -->
+  <div class="section-title">日別ポイント履歴</div>
+  <div id="dailyLogWrap">
+    <div class="empty"><div class="empty-icon">📋</div>データがありません</div>
+  </div>
+</div>
+
+<!-- ===== TODAY ===== -->
+<div class="tab-content" id="tab-today">
+  <div class="summary-row">
+    <div class="summary-card"><div class="summary-val" id="s-total">0</div><div class="summary-label">合計P数</div></div>
+    <div class="summary-card"><div class="summary-val" id="s-members">0</div><div class="summary-label">出勤人数</div></div>
+    <div class="summary-card"><div class="summary-val" id="s-sales" style="font-size:13px;">--</div><div class="summary-label">本日売上</div></div>
+  </div>
+
+  <!-- 今日のチームポイント -->
+  <div class="battle-card" style="padding:14px;margin-bottom:14px;">
+    <div class="battle-title">本日のポイント</div>
+    <div class="battle-teams">
+      <div class="battle-team">
+        <div class="battle-team-label battle-team-label-a">TEAM A</div>
+        <div class="battle-points battle-points-a" style="font-size:30px;" id="todayPtA">0</div>
+        <div class="battle-unit" style="font-size:11px;">pt</div>
+      </div>
+      <div class="battle-vs" style="font-size:14px;">VS</div>
+      <div class="battle-team">
+        <div class="battle-team-label battle-team-label-b">TEAM B</div>
+        <div class="battle-points battle-points-b" style="font-size:30px;" id="todayPtB">0</div>
+        <div class="battle-unit" style="font-size:11px;">pt</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">本日のランキング</div>
+  <div id="todayRanking">
+    <div class="empty"><div class="empty-icon">📥</div>右下の＋ボタンからP数を入力してください</div>
+  </div>
+</div>
+
+<!-- ===== MONTHLY ===== -->
+<div class="tab-content" id="tab-monthly">
+  <div class="date-selector">
+    <button class="date-btn" onclick="changeMonth(-1)">◀</button>
+    <div class="date-display" id="monthDisplay"></div>
+    <button class="date-btn" onclick="changeMonth(1)">▶</button>
+  </div>
+  <div class="summary-row">
+    <div class="summary-card"><div class="summary-val" id="m-days">0</div><div class="summary-label">記録日数</div></div>
+    <div class="summary-card"><div class="summary-val" id="m-total">0</div><div class="summary-label">月間合計P</div></div>
+    <div class="summary-card"><div class="summary-val" id="m-top">-</div><div class="summary-label">MVP</div></div>
+  </div>
+  <div class="section-title">月間個人ランキング</div>
+  <div id="monthlyRanking"><div class="empty"><div class="empty-icon">📋</div>データがありません</div></div>
+</div>
+
+<!-- ===== CHART ===== -->
+<div class="tab-content" id="tab-chart">
+  <div class="date-selector">
+    <button class="date-btn" onclick="changeChartMonth(-1)">◀</button>
+    <div class="date-display" id="chartMonthDisplay"></div>
+    <button class="date-btn" onclick="changeChartMonth(1)">▶</button>
+  </div>
+  <div class="chart-wrap">
+    <div class="section-title" style="margin-bottom:12px;">チーム日次ポイント推移</div>
+    <canvas id="teamChart" height="180"></canvas>
+  </div>
+  <div class="chart-wrap">
+    <div class="section-title" style="margin-bottom:12px;">社員別貢献率</div>
+    <canvas id="pieChart" height="210"></canvas>
+  </div>
+</div>
+
+</div>
+
+<button class="fab" onclick="openModal()">＋</button>
+
+<!-- LOCK MODAL -->
+<div class="lock-modal" id="lockModal">
+  <div class="lock-box">
+    <div class="lock-title">👑 社長モード</div>
+    <div class="lock-sub">暗証番号を入力してください</div>
+    <input type="password" class="lock-input" id="lockInput" maxlength="4" placeholder="••••" inputmode="numeric">
+    <div class="lock-err" id="lockErr"></div>
+    <button class="btn" style="background:var(--gold);color:#0a0e1a;margin-bottom:8px;" onclick="checkPin()">解除する</button>
+    <button class="btn btn-outline" onclick="closeLock()">キャンセル</button>
+  </div>
+</div>
+
+<!-- INPUT MODAL -->
+<div class="modal-bg" id="modalBg" onclick="closeModalBg(event)">
+  <div class="modal">
+    <div class="modal-title">📥 P数入力</div>
+    <div class="modal-sub" id="modalSub"></div>
+
+    <div class="input-group">
+      <label class="input-label">📅 記録日</label>
+      <input type="date" class="input-field" id="inputDate">
+    </div>
+
+    <!-- 社長専用：単価設定 -->
+    <div id="ownerSection" style="display:none;">
+      <div class="owner-section">
+        <div class="owner-section-title">👑 社長専用：現場・単価設定</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+          <div>
+            <div class="input-label">現場名</div>
+            <input type="text" class="input-field text-input" id="siteName" placeholder="例：西天満" style="padding:8px 10px;font-size:12px;">
+          </div>
+          <div>
+            <div class="input-label">製品カテゴリ</div>
+            <input type="text" class="input-field text-input" id="category" placeholder="例：スラブ" style="padding:8px 10px;font-size:12px;">
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:8px;">各社員の単価（円/P）</div>
+        <div id="unitPriceInputs"></div>
+      </div>
+    </div>
+
+    <div class="team-header team-header-a">TEAM A｜泉原 城戸 都築 杉原 西崎</div>
+    <div id="teamAInputs"></div>
+    <div class="team-header team-header-b" style="margin-top:8px;">TEAM B｜山﨑 雅人 大本汐 都田</div>
+    <div id="teamBInputs"></div>
+
+    <div style="margin-top:14px;">
+      <button class="btn btn-primary" onclick="saveDay()">✓ 保存する</button>
+      <button class="btn btn-outline" onclick="closeModal()">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PIN = '1125';
+
+const TEAM_A = [
+  {id:'izumihara',name:'泉原',  multiplier:1.0,rule:'標準'},
+  {id:'kido',     name:'城戸',  multiplier:1.0,rule:'標準'},
+  {id:'tsuzuki',  name:'都築',  multiplier:1.0,rule:'標準'},
+  {id:'sugihara', name:'杉原',  multiplier:0.7,rule:'×0.7'},
+  {id:'nishizaki',name:'西崎',  multiplier:1.0,rule:'特殊'},
+];
+const TEAM_B = [
+  {id:'yamazaki', name:'山﨑',   multiplier:1.0,rule:'標準'},
+  {id:'masato',   name:'雅人',   multiplier:1.0,rule:'標準'},
+  {id:'ohmotos',  name:'大本汐', multiplier:1.0,rule:'標準'},
+  {id:'miyakoda', name:'都田',   multiplier:1.0,rule:'標準'},
+];
+const ALL_EMP = [...TEAM_A,...TEAM_B];
+const COLORS_A=['#00d4aa','#06b6d4','#10b981','#34d399','#a7f3d0'];
+const COLORS_B=['#3b82f6','#6366f1','#8b5cf6','#a78bfa'];
+function empColor(e){const ia=TEAM_A.findIndex(x=>x.id===e.id);if(ia>=0)return COLORS_A[ia%COLORS_A.length];const ib=TEAM_B.findIndex(x=>x.id===e.id);return COLORS_B[ib%COLORS_B.length];}
+
+// ========================
+// DATA
+// ========================
+function loadData(){try{return JSON.parse(localStorage.getItem('pcount_v3')||'{}');}catch(e){return{};}}
+function saveData(d){localStorage.setItem('pcount_v3',JSON.stringify(d));}
+function loadPrices(){try{return JSON.parse(localStorage.getItem('unit_prices_v3')||'{}');}catch(e){return{};}}
+function savePrices(d){localStorage.setItem('unit_prices_v3',JSON.stringify(d));}
+function getTodayKey(){return new Date().toISOString().slice(0,10);}
+function getMonthKey(y,m){return`${y}-${String(m+1).padStart(2,'0')}`;}
+
+let isOwner=false;
+let viewMonth=new Date();
+let chartMonth=new Date();
+let battlePeriod='month';
+
+// ========================
+// OWNER
+// ========================
+function toggleOwner(){
+  if(isOwner){isOwner=false;document.getElementById('ownerBtn').classList.remove('active');document.getElementById('ownerBtn').textContent='👑 社長';renderAll();}
+  else{document.getElementById('lockModal').classList.add('open');document.getElementById('lockInput').value='';document.getElementById('lockErr').textContent='';setTimeout(()=>document.getElementById('lockInput').focus(),100);}
+}
+function checkPin(){
+  if(document.getElementById('lockInput').value===PIN){
+    isOwner=true;document.getElementById('ownerBtn').classList.add('active');document.getElementById('ownerBtn').textContent='👑 ON';closeLock();renderAll();
+  }else{document.getElementById('lockErr').textContent='番号が違います';document.getElementById('lockInput').value='';}
+}
+function closeLock(){document.getElementById('lockModal').classList.remove('open');}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('lockModal').classList.contains('open'))checkPin();});
+
+// ========================
+// TABS & PERIOD
+// ========================
+function switchTab(name,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');document.getElementById('tab-'+name).classList.add('active');
+  if(name==='battle')renderBattle();
+  if(name==='monthly')renderMonthly();
+  if(name==='chart')renderCharts();
+}
+function switchPeriod(p,el){
+  battlePeriod=p;
+  document.querySelectorAll('.period-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');renderBattle();
+}
+
+// ========================
+// POINT CALCULATION
+// ========================
+// 1日の売上合計に対してチームの割合×100をポイントとする
+function calcDayPoints(dateKey){
+  const data=loadData();
+  const prices=loadPrices();
+  const dayData=data[dateKey]||{};
+  const dayPrices=prices[dateKey]||{};
+
+  let amtA=0,amtB=0;
+  TEAM_A.forEach(e=>{
+    const pe=dayData[e.id]?.pEffective||0;
+    const up=dayPrices[e.id]||0;
+    amtA+=pe*up;
+  });
+  TEAM_B.forEach(e=>{
+    const pe=dayData[e.id]?.pEffective||0;
+    const up=dayPrices[e.id]||0;
+    amtB+=pe*up;
+  });
+
+  const total=amtA+amtB;
+  if(total===0) return{ptA:0,ptB:0,amtA,amtB,total,hasPrice:false};
+  const ptA=Math.round(amtA/total*100);
+  const ptB=100-ptA;
+  return{ptA,ptB,amtA,amtB,total,hasPrice:true};
+}
+
+// ========================
+// BATTLE TAB
+// ========================
+function renderBattle(){
+  const now=new Date();
+  const data=loadData();
+  const prices=loadPrices();
+
+  let keys=[];
+  if(battlePeriod==='month'){
+    const ms=getMonthKey(now.getFullYear(),now.getMonth());
+    keys=Object.keys(data).filter(k=>k.startsWith(ms)).sort();
+    document.getElementById('battleTitle').textContent=`${now.getMonth()+1}月 チームポイント対決`;
+  } else {
+    const yr=String(now.getFullYear());
+    keys=Object.keys(data).filter(k=>k.startsWith(yr)).sort();
+    document.getElementById('battleTitle').textContent=`${now.getFullYear()}年 年間累積ポイント`;
+  }
+
+  let totalPtA=0,totalPtB=0;
+  const dayResults=[];
+
+  keys.forEach(k=>{
+    const r=calcDayPoints(k);
+    if(r.hasPrice){
+      totalPtA+=r.ptA;
+      totalPtB+=r.ptB;
+      dayResults.push({date:k,...r});
+    }
+  });
+
+  // バトルカード
+  document.getElementById('battlePtA').textContent=totalPtA;
+  document.getElementById('battlePtB').textContent=totalPtB;
+
+  const grandPt=totalPtA+totalPtB;
+  const pctA=grandPt>0?totalPtA/grandPt*100:50;
+  const pctB=100-pctA;
+  document.getElementById('battleBarA').style.width=pctA+'%';
+  document.getElementById('battleBarB').style.width=pctB+'%';
+  document.getElementById('battleBarLabelA').textContent=Math.round(pctA);
+  document.getElementById('battleBarLabelB').textContent=Math.round(pctB);
+
+  const leadEl=document.getElementById('battleLead');
+  if(grandPt===0){leadEl.textContent='単価を設定するとポイントが計算されます';leadEl.className='battle-lead lead-even';}
+  else if(totalPtA>totalPtB){leadEl.textContent=`🏆 チームA リード（+${totalPtA-totalPtB}pt）`;leadEl.className='battle-lead lead-a';}
+  else if(totalPtB>totalPtA){leadEl.textContent=`🏆 チームB リード（+${totalPtB-totalPtA}pt）`;leadEl.className='battle-lead lead-b';}
+  else{leadEl.textContent='引き分け！';leadEl.className='battle-lead lead-even';}
+
+  // 日別ログ
+  const wrap=document.getElementById('dailyLogWrap');
+  if(!dayResults.length){
+    wrap.innerHTML='<div class="empty"><div class="empty-icon">📋</div>単価を入力するとポイントが表示されます</div>';return;
+  }
+
+  wrap.innerHTML=`
+    <div class="daily-log">
+      <div class="daily-log-header">
+        <div>日付</div><div>バー</div><div style="text-align:right;">A pt</div><div style="text-align:right;">B pt</div><div style="text-align:center;">勝者</div>
+      </div>
+      ${[...dayResults].reverse().map(r=>{
+        const winner=r.ptA>r.ptB?'🟢A':r.ptB>r.ptA?'🔵B':'△';
+        return`<div class="daily-log-row">
+          <div class="log-date">${r.date.slice(5)}</div>
+          <div><div class="log-bar"><div class="log-bar-a" style="width:${r.ptA}%"></div><div class="log-bar-b" style="width:${r.ptB}%"></div></div></div>
+          <div class="log-pt-a">${r.ptA}</div>
+          <div class="log-pt-b">${r.ptB}</div>
+          <div class="log-winner">${winner}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+// ========================
+// TODAY TAB
+// ========================
+function renderToday(){
+  const data=loadData();
+  const prices=loadPrices();
+  const today=getTodayKey();
+  const dayData=data[today]||{};
+  const dayPrices=prices[today]||{};
+
+  const r=calcDayPoints(today);
+  document.getElementById('todayPtA').textContent=r.ptA;
+  document.getElementById('todayPtB').textContent=r.ptB;
+  document.getElementById('s-sales').textContent=r.total>0?'¥'+Math.round(r.total/10000)+'万':'--';
+
+  let totalP=0;
+  const entries=ALL_EMP.filter(e=>dayData[e.id]).map(e=>{
+    const d=dayData[e.id];
+    const up=dayPrices[e.id]||0;
+    const amt=Math.round(d.pEffective*up);
+    totalP+=d.pEffective;
+    return{...e,...d,amount:amt,hasPrice:up>0,
+      sortVal:isOwner&&up>0?amt:d.pEffective,color:empColor(e)};
+  }).sort((a,b)=>b.sortVal-a.sortVal);
+
+  const totalSortVal=entries.reduce((s,e)=>s+e.sortVal,0);
+  document.getElementById('s-total').textContent=Math.round(totalP);
+  document.getElementById('s-members').textContent=entries.length;
+
+  const ranking=document.getElementById('todayRanking');
+  if(!entries.length){ranking.innerHTML='<div class="empty"><div class="empty-icon">📥</div>右下の＋ボタンからP数を入力してください</div>';return;}
+  const medals=['🥇','🥈','🥉'];
+  ranking.innerHTML=entries.map((e,i)=>{
+    const pct=totalSortVal>0?(e.sortVal/totalSortVal*100):0;
+    const rc=i<3?`rank-${i+1}`:'';const nc=i<3?'':'rank-num-other';
+    return`<div class="rank-card ${rc}">
+      <div class="rank-num ${nc}">${i+1}</div>
+      <div class="rank-info">
+        <div class="rank-name"><div class="team-dot" style="background:${e.color}"></div>${e.name}${e.note?`<span class="badge badge-note">${e.note}</span>`:''}</div>
+        <div class="rank-bar-wrap"><div class="rank-bar" style="width:${pct}%;background:${e.color}"></div></div>
+      </div>
+      <div class="rank-right">
+        <div class="rank-pcount" style="color:${e.color}">${e.pEffective}P</div>
+        ${isOwner&&e.hasPrice?`<div class="rank-pct">¥${e.amount.toLocaleString()}</div>`:''}
+      </div>
+      ${i<3?`<div class="rank-medal">${medals[i]}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ========================
+// MONTHLY
+// ========================
+function changeMonth(dir){viewMonth=new Date(viewMonth.getFullYear(),viewMonth.getMonth()+dir,1);renderMonthly();}
+function renderMonthly(){
+  const y=viewMonth.getFullYear(),m=viewMonth.getMonth();
+  document.getElementById('monthDisplay').textContent=`${y}年${m+1}月`;
+  const data=loadData();const prices=loadPrices();
+  const ms=getMonthKey(y,m);
+  const pTotals={},amtTotals={};
+  ALL_EMP.forEach(e=>{pTotals[e.id]=0;amtTotals[e.id]=0;});
+  let days=0,grandP=0;
+  Object.keys(data).filter(k=>k.startsWith(ms)).forEach(k=>{
+    days++;const dayPrices=prices[k]||{};
+    ALL_EMP.forEach(e=>{
+      const pe=data[k][e.id]?.pEffective||0;
+      pTotals[e.id]+=pe;grandP+=pe;
+      if(dayPrices[e.id])amtTotals[e.id]+=Math.round(pe*dayPrices[e.id]);
+    });
+  });
+  const useAmt=isOwner&&Object.values(amtTotals).some(v=>v>0);
+  const getVal=id=>useAmt?amtTotals[id]:pTotals[id];
+  const grand=ALL_EMP.reduce((s,e)=>s+getVal(e.id),0);
+  const sorted=ALL_EMP.filter(e=>pTotals[e.id]>0).map(e=>({
+    ...e,pEffective:Math.round(pTotals[e.id]*10)/10,
+    amount:amtTotals[e.id],sortVal:getVal(e.id),color:empColor(e)
+  })).sort((a,b)=>b.sortVal-a.sortVal);
+
+  document.getElementById('m-days').textContent=days;
+  document.getElementById('m-total').textContent=Math.round(grandP);
+  document.getElementById('m-top').textContent=sorted[0]?.name||'-';
+
+  const ranking=document.getElementById('monthlyRanking');
+  if(!sorted.length){ranking.innerHTML='<div class="empty"><div class="empty-icon">📋</div>データがありません</div>';return;}
+  const medals=['🥇','🥈','🥉'];
+  ranking.innerHTML=sorted.map((e,i)=>{
+    const pct=grand>0?(e.sortVal/grand*100):0;
+    const rc=i<3?`rank-${i+1}`:'';const nc=i<3?'':'rank-num-other';
+    return`<div class="rank-card ${rc}">
+      <div class="rank-num ${nc}">${i+1}</div>
+      <div class="rank-info">
+        <div class="rank-name"><div class="team-dot" style="background:${e.color}"></div>${e.name}</div>
+        <div class="rank-bar-wrap"><div class="rank-bar" style="width:${pct}%;background:${e.color}"></div></div>
+      </div>
+      <div class="rank-right">
+        <div class="rank-pcount" style="color:${e.color}">${e.pEffective}P</div>
+        ${isOwner&&e.amount?`<div class="rank-pct">¥${e.amount.toLocaleString()}</div>`:''}
+      </div>
+      ${i<3?`<div class="rank-medal">${medals[i]}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ========================
+// CHARTS
+// ========================
+function changeChartMonth(dir){chartMonth=new Date(chartMonth.getFullYear(),chartMonth.getMonth()+dir,1);renderCharts();}
+function renderCharts(){
+  const y=chartMonth.getFullYear(),m=chartMonth.getMonth();
+  document.getElementById('chartMonthDisplay').textContent=`${y}年${m+1}月`;
+  const data=loadData();const ms=getMonthKey(y,m);
+  const keys=Object.keys(data).filter(k=>k.startsWith(ms)).sort();
+  const ptAs=keys.map(k=>calcDayPoints(k).ptA);
+  const ptBs=keys.map(k=>calcDayPoints(k).ptB);
+  const pTotals={};ALL_EMP.forEach(e=>pTotals[e.id]=0);
+  keys.forEach(k=>ALL_EMP.forEach(e=>{pTotals[e.id]+=(data[k][e.id]?.pEffective||0);}));
+  renderTeamChart(keys,ptAs,ptBs);renderPieChart(pTotals);
+}
+
+function renderTeamChart(keys,ptAs,ptBs){
+  const canvas=document.getElementById('teamChart');const ctx=canvas.getContext('2d');
+  canvas.width=canvas.offsetWidth*window.devicePixelRatio;canvas.height=180*window.devicePixelRatio;
+  ctx.scale(window.devicePixelRatio,window.devicePixelRatio);
+  const W=canvas.offsetWidth,H=180;ctx.clearRect(0,0,W,H);
+  if(!keys.length){ctx.fillStyle='#64748b';ctx.font='12px sans-serif';ctx.textAlign='center';ctx.fillText('データがありません',W/2,H/2);return;}
+  const pad={top:20,right:10,bottom:28,left:36};
+  const gW=W-pad.left-pad.right,gH=H-pad.top-pad.bottom;
+  const bW=Math.min(gW/keys.length*0.33,16);
+  for(let i=0;i<=4;i++){const y=pad.top+(gH/4)*i;ctx.strokeStyle='#1e2d45';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(pad.left+gW,y);ctx.stroke();ctx.fillStyle='#64748b';ctx.font='9px sans-serif';ctx.textAlign='right';ctx.fillText(Math.round(100-25*i),pad.left-4,y+3);}
+  keys.forEach((k,i)=>{
+    const cx=pad.left+(i+0.5)*(gW/keys.length);
+    const hA=(ptAs[i]/100)*gH;const hB=(ptBs[i]/100)*gH;
+    ctx.fillStyle='#00d4aa';ctx.beginPath();ctx.roundRect(cx-bW-2,pad.top+gH-hA,bW,hA,2);ctx.fill();
+    ctx.fillStyle='#3b82f6';ctx.beginPath();ctx.roundRect(cx+2,pad.top+gH-hB,bW,hB,2);ctx.fill();
+    ctx.fillStyle='#64748b';ctx.font='8px sans-serif';ctx.textAlign='center';ctx.fillText(k.slice(8),cx,H-pad.bottom+12);
+  });
+  ctx.fillStyle='#00d4aa';ctx.fillRect(pad.left,6,10,8);ctx.fillStyle='#e2e8f0';ctx.font='9px sans-serif';ctx.textAlign='left';ctx.fillText('チームA',pad.left+13,13);
+  ctx.fillStyle='#3b82f6';ctx.fillRect(pad.left+62,6,10,8);ctx.fillStyle='#e2e8f0';ctx.fillText('チームB',pad.left+75,13);
+}
+
+function renderPieChart(pTotals){
+  const canvas=document.getElementById('pieChart');const ctx=canvas.getContext('2d');
+  canvas.width=canvas.offsetWidth*window.devicePixelRatio;canvas.height=210*window.devicePixelRatio;
+  ctx.scale(window.devicePixelRatio,window.devicePixelRatio);
+  const W=canvas.offsetWidth,H=210;ctx.clearRect(0,0,W,H);
+  const entries=ALL_EMP.filter(e=>pTotals[e.id]>0).map(e=>({name:e.name,val:pTotals[e.id],color:empColor(e)})).sort((a,b)=>b.val-a.val);
+  if(!entries.length){ctx.fillStyle='#64748b';ctx.font='12px sans-serif';ctx.textAlign='center';ctx.fillText('データがありません',W/2,H/2);return;}
+  const total=entries.reduce((s,e)=>s+e.val,0);
+  const cx=W*0.32,cy=H/2,r=Math.min(cx,cy)-12;let angle=-Math.PI/2;
+  entries.forEach(e=>{const sl=(e.val/total)*Math.PI*2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,angle,angle+sl);ctx.closePath();ctx.fillStyle=e.color;ctx.fill();ctx.strokeStyle='#0a0e1a';ctx.lineWidth=2;ctx.stroke();angle+=sl;});
+  const lx=W*0.6,sy=H/2-(entries.length*19)/2;
+  entries.forEach((e,i)=>{const ly=sy+i*20;ctx.fillStyle=e.color;ctx.beginPath();ctx.roundRect(lx,ly-6,10,10,2);ctx.fill();ctx.fillStyle='#e2e8f0';ctx.font='11px sans-serif';ctx.textAlign='left';ctx.fillText(`${e.name} ${(e.val/total*100).toFixed(0)}%`,lx+13,ly+3);});
+}
+
+// ========================
+// MODAL
+// ========================
+function buildEmpInputs(containerId,employees,existing){
+  document.getElementById(containerId).innerHTML=employees.map(emp=>`
+    <div class="emp-row">
+      <div class="emp-row-header">
+        <div class="team-dot" style="background:${empColor(emp)}"></div>
+        <div class="emp-row-name">${emp.name}</div>
+        <span class="emp-rule-badge">${emp.rule}</span>
+      </div>
+      <div class="emp-fields">
+        <div class="emp-field-wrap"><div class="emp-field-label">P数</div><input type="number" class="input-field" id="p-${emp.id}" placeholder="0" value="${existing[emp.id]?.p||''}" style="padding:7px 8px;font-size:13px;"></div>
+        <div class="emp-field-wrap"><div class="emp-field-label">備考</div><input type="text" class="input-field text-input" id="note-${emp.id}" placeholder="階段等" value="${existing[emp.id]?.note||''}" style="padding:7px 8px;font-size:11px;"></div>
+        <div class="emp-field-wrap"><div class="emp-field-label">現場</div><input type="text" class="input-field text-input" id="site-${emp.id}" placeholder="現場名" value="${existing[emp.id]?.site||''}" style="padding:7px 8px;font-size:11px;"></div>
+      </div>
+    </div>`).join('');
+}
+
+function buildUnitPriceInputs(dateKey){
+  const prices=loadPrices();const dp=prices[dateKey]||{};
+  document.getElementById('unitPriceInputs').innerHTML=ALL_EMP.map(emp=>`
+    <div class="unit-row">
+      <div class="unit-name">${emp.name}</div>
+      <div><div class="unit-label">円/P</div><input type="number" class="unit-field" id="up-${emp.id}" placeholder="0" value="${dp[emp.id]||''}"></div>
+    </div>`).join('');
+}
+
+function openModal(){
+  const today=getTodayKey();
+  document.getElementById('inputDate').value=today;
+  document.getElementById('modalSub').textContent='記録日：'+today;
+  const existing=loadData()[today]||{};
+  document.getElementById('ownerSection').style.display=isOwner?'block':'none';
+  if(isOwner){
+    document.getElementById('siteName').value=existing._siteName||'';
+    document.getElementById('category').value=existing._category||'';
+    buildUnitPriceInputs(today);
+  }
+  buildEmpInputs('teamAInputs',TEAM_A,existing);
+  buildEmpInputs('teamBInputs',TEAM_B,existing);
+  document.getElementById('modalBg').classList.add('open');
+}
+function closeModal(){document.getElementById('modalBg').classList.remove('open');}
+function closeModalBg(e){if(e.target===document.getElementById('modalBg'))closeModal();}
+
+function calcP(pRaw,emp,note){const isStairs=note.includes('階段');let p=isStairs?pRaw/3:pRaw;return Math.round(p*emp.multiplier*10)/10;}
+
+function saveDay(){
+  const dateKey=document.getElementById('inputDate').value;
+  const data=loadData();const dayData={};
+  if(isOwner){
+    dayData._siteName=document.getElementById('siteName').value.trim();
+    dayData._category=document.getElementById('category').value.trim();
+    const prices=loadPrices();const dp={};
+    ALL_EMP.forEach(emp=>{const up=parseFloat(document.getElementById('up-'+emp.id).value)||0;if(up>0)dp[emp.id]=up;});
+    prices[dateKey]=dp;savePrices(prices);
+  }
+  ALL_EMP.forEach(emp=>{
+    const pRaw=parseFloat(document.getElementById('p-'+emp.id).value)||0;
+    const note=document.getElementById('note-'+emp.id).value.trim();
+    const site=document.getElementById('site-'+emp.id).value.trim();
+    if(pRaw>0)dayData[emp.id]={p:pRaw,pEffective:calcP(pRaw,emp,note),note,site};
+  });
+  data[dateKey]=dayData;saveData(data);closeModal();renderAll();
+  document.getElementById('headerSub').textContent=dateKey+' 入力済み';
+}
+
+function renderAll(){renderBattle();renderToday();renderMonthly();renderCharts();}
+
+window.onload=()=>{
+  const now=new Date();
+  document.getElementById('headerSub').textContent=`${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
+  viewMonth=new Date(now.getFullYear(),now.getMonth(),1);
+  chartMonth=new Date(now.getFullYear(),now.getMonth(),1);
+  ['monthDisplay','chartMonthDisplay'].forEach(id=>{document.getElementById(id).textContent=`${now.getFullYear()}年${now.getMonth()+1}月`;});
+  renderAll();
+};
+</script>
+</body>
+</html>
