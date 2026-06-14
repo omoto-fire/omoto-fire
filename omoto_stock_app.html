@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FIRE Dashboard">
+<title>大本 FIRE ダッシュボード</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Share+Tech+Mono&family=Inter:wght@300;400;600;700&display=swap');
+  :root {
+    --bg:#0a0e1a; --surface:#111827; --surface2:#1a2235;
+    --border:#1e2d45; --accent:#00d4aa; --accent2:#3b82f6;
+    --danger:#ef4444; --warning:#f59e0b;
+    --text:#e2e8f0; --muted:#64748b; --green:#10b981; --red:#f43f5e;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP','Inter',sans-serif;font-size:14px;min-height:100vh;padding-bottom:80px;}
+
+  .header{background:linear-gradient(135deg,#0a0e1a,#0f1e3a);border-bottom:1px solid var(--border);padding:14px 16px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;}
+  .header-title{font-family:'Share Tech Mono',monospace;font-size:16px;color:var(--accent);letter-spacing:1px;}
+  .header-sub{font-size:10px;color:var(--muted);margin-top:2px;}
+
+  /* ALERT BANNER */
+  .alert-banner{display:none;margin:12px 16px 0;border-radius:12px;overflow:hidden;}
+  .alert-banner.show{display:block;}
+  .alert-item{padding:12px 14px;display:flex;align-items:flex-start;gap:10px;border-bottom:1px solid rgba(255,255,255,0.1);}
+  .alert-item:last-child{border-bottom:none;}
+  .alert-critical{background:rgba(244,63,94,0.15);border:1px solid var(--red);}
+  .alert-warning{background:rgba(245,158,11,0.12);border:1px solid var(--warning);}
+  .alert-icon{font-size:18px;flex-shrink:0;}
+  .alert-text{font-size:12px;line-height:1.5;}
+  .alert-title{font-weight:700;margin-bottom:2px;}
+  .alert-close{margin-left:auto;font-size:16px;cursor:pointer;color:var(--muted);flex-shrink:0;}
+
+  .tabs{display:flex;gap:4px;padding:12px 16px 0;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{padding:8px 14px;border-radius:8px 8px 0 0;font-size:12px;font-weight:500;cursor:pointer;border:1px solid transparent;border-bottom:none;color:var(--muted);white-space:nowrap;transition:all 0.2s;background:transparent;}
+  .tab.active{background:var(--surface);color:var(--accent);border-color:var(--border);border-bottom:1px solid var(--surface);margin-bottom:-1px;}
+
+  .main{padding:16px;}
+  .tab-content{display:none;}
+  .tab-content.active{display:block;}
+
+  .total-card{background:linear-gradient(135deg,#0f2040,#0a1628);border:1px solid var(--accent);border-radius:14px;padding:20px;margin-bottom:16px;position:relative;overflow:hidden;}
+  .total-card::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(0,212,170,0.06);}
+  .total-label{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+  .total-value{font-family:'Share Tech Mono',monospace;font-size:36px;font-weight:700;color:var(--text);}
+  .total-value span{font-size:18px;color:var(--muted);margin-right:4px;}
+  .total-sub{font-size:12px;color:var(--muted);margin-top:6px;}
+  .fire-progress{margin-top:16px;}
+  .fire-label{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:6px;}
+  .fire-bar{height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
+  .fire-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width 0.8s ease;}
+  .fire-milestones{display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-top:4px;}
+
+  .section-title{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+  .section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  .holding-grid{display:grid;gap:8px;margin-bottom:20px;}
+  .holding-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;display:grid;grid-template-columns:1fr auto;gap:4px;align-items:center;}
+  .holding-name{font-weight:600;font-size:13px;}
+  .holding-ticker{font-size:10px;color:var(--muted);margin-top:2px;}
+  .holding-value{font-family:'Share Tech Mono',monospace;font-size:16px;font-weight:700;text-align:right;}
+  .holding-pct{font-size:11px;text-align:right;margin-top:2px;}
+  .holding-bar{grid-column:1/-1;height:3px;background:var(--border);border-radius:2px;margin-top:8px;overflow:hidden;}
+  .holding-fill{height:100%;border-radius:2px;}
+  .up{color:var(--green);} .down{color:var(--red);} .neutral{color:var(--muted);}
+
+  /* MODAL */
+  .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:flex-end;}
+  .modal-bg.open{display:flex;}
+  .modal{background:var(--surface);border-radius:20px 20px 0 0;padding:24px 20px;width:100%;max-height:90vh;overflow-y:auto;}
+  .modal-title{font-size:15px;font-weight:700;margin-bottom:16px;color:var(--accent);}
+  .input-group{margin-bottom:14px;}
+  .input-label{font-size:11px;color:var(--muted);margin-bottom:6px;display:block;}
+  .input-field{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:12px 14px;border-radius:10px;font-family:'Share Tech Mono',monospace;font-size:14px;outline:none;}
+  .input-field:focus{border-color:var(--accent);}
+  .input-hint{font-size:10px;color:var(--muted);margin-top:4px;}
+  .btn{padding:12px 20px;border-radius:10px;border:none;font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;width:100%;}
+  .btn-primary{background:var(--accent);color:#0a0e1a;margin-bottom:8px;}
+  .btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted);}
+  .btn-sm{padding:8px 14px;font-size:11px;width:auto;}
+
+  .fab{position:fixed;bottom:24px;right:20px;width:56px;height:56px;border-radius:50%;background:var(--accent);border:none;font-size:24px;cursor:pointer;box-shadow:0 4px 20px rgba(0,212,170,0.4);z-index:100;display:flex;align-items:center;justify-content:center;transition:transform 0.2s;}
+  .fab:active{transform:scale(0.93);}
+
+  .history-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
+  .history-date{font-size:11px;color:var(--muted);}
+  .history-total{font-family:'Share Tech Mono',monospace;font-size:15px;font-weight:600;}
+
+  .chart-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;}
+  canvas{width:100% !important;}
+
+  .advice-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;}
+  .advice-badge{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#0a0e1a;font-size:10px;font-weight:700;padding:4px 8px;border-radius:20px;}
+  .spinner{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block;margin-right:8px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  textarea{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:8px;font-family:'Noto Sans JP',sans-serif;font-size:13px;resize:none;outline:none;height:80px;margin-bottom:8px;}
+  textarea:focus{border-color:var(--accent);}
+
+  /* WATCHLIST */
+  .watch-section{margin-bottom:20px;}
+  .watch-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;}
+  .watch-card.triggered{border-color:var(--red);background:rgba(244,63,94,0.06);}
+  .watch-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+  .watch-name{font-weight:600;font-size:13px;}
+  .watch-badge{font-size:10px;padding:3px 8px;border-radius:12px;font-weight:600;}
+  .badge-watch{background:rgba(100,116,139,0.2);color:var(--muted);}
+  .badge-ok{background:rgba(16,185,129,0.15);color:var(--green);}
+  .badge-alert{background:rgba(244,63,94,0.15);color:var(--red);}
+  .watch-target{font-size:11px;color:var(--muted);line-height:1.6;}
+  .watch-current{font-family:'Share Tech Mono',monospace;font-size:13px;margin-top:6px;}
+
+  /* ALERT SETTINGS */
+  .alert-setting-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;}
+  .alert-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
+  .alert-row:last-child{border-bottom:none;}
+  .alert-row-left{font-size:12px;}
+  .alert-row-label{font-weight:600;margin-bottom:2px;}
+  .alert-row-sub{font-size:10px;color:var(--muted);}
+  .alert-threshold{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--red);font-weight:700;}
+
+  .monthly-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;}
+  .monthly-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);}
+  .monthly-row:last-child{border-bottom:none;}
+  .monthly-label{font-size:12px;color:var(--muted);}
+  .monthly-val{font-family:'Share Tech Mono',monospace;font-size:13px;font-weight:600;color:var(--accent);}
+
+  /* HOME SCREEN GUIDE */
+  .guide-card{background:var(--surface);border:1px solid var(--accent);border-radius:12px;padding:16px;margin-bottom:16px;}
+  .guide-step{display:flex;gap:12px;margin-bottom:14px;align-items:flex-start;}
+  .guide-step:last-child{margin-bottom:0;}
+  .step-num{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#0a0e1a;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .step-text{font-size:12px;line-height:1.6;color:var(--text);}
+  .step-text strong{color:var(--accent);}
+
+  .empty{text-align:center;padding:32px 16px;color:var(--muted);font-size:13px;}
+  .empty-icon{font-size:32px;margin-bottom:10px;}
+
+  /* CHECK RESULT */
+  .check-result{margin-top:8px;font-size:11px;padding:6px 10px;border-radius:6px;display:none;}
+  .check-result.show{display:block;}
+  .check-ok{background:rgba(16,185,129,0.1);color:var(--green);}
+  .check-ng{background:rgba(244,63,94,0.1);color:var(--red);}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">大本 FIRE DASHBOARD</div>
+    <div class="header-sub" id="lastUpdate">資産を入力してスタート</div>
+  </div>
+  <div style="font-size:11px;color:var(--accent);" id="alertCount"></div>
+</div>
+
+<!-- ALERT BANNERS -->
+<div id="alertBanners"></div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('portfolio',this)">📊 資産</div>
+  <div class="tab" onclick="switchTab('history',this)">📈 推移</div>
+  <div class="tab" onclick="switchTab('watchlist',this)">🚨 監視</div>
+  <div class="tab" onclick="switchTab('advice',this)">🤖 AI相談</div>
+  <div class="tab" onclick="switchTab('home',this)">📱 ホーム追加</div>
+</div>
+
+<div class="main">
+
+<!-- ===== PORTFOLIO ===== -->
+<div class="tab-content active" id="tab-portfolio">
+  <div class="total-card">
+    <div class="total-label">推定総資産（株式）</div>
+    <div class="total-value"><span>¥</span><span id="totalVal">---</span><span style="font-size:18px;margin-left:4px;">万</span></div>
+    <div class="total-sub" id="totalSub">右下の ＋ ボタンから今週の資産を入力</div>
+    <div class="fire-progress">
+      <div class="fire-label">
+        <span>FIREまでの進捗</span>
+        <span id="firePercent">--%</span>
+      </div>
+      <div class="fire-bar"><div class="fire-fill" id="fireFill" style="width:0%"></div></div>
+      <div class="fire-milestones">
+        <span>¥0</span><span>サイドFIRE ¥6,750万</span><span>完全FIRE ¥9,800万</span>
+      </div>
+    </div>
+  </div>
+  <div class="section-title">保有ファンド内訳</div>
+  <div class="holding-grid" id="holdingGrid">
+    <div class="empty"><div class="empty-icon">📥</div>＋ ボタンから資産額を入力してください</div>
+  </div>
+</div>
+
+<!-- ===== HISTORY ===== -->
+<div class="tab-content" id="tab-history">
+  <div class="chart-wrap">
+    <div class="section-title" style="margin-bottom:12px;">資産推移グラフ</div>
+    <canvas id="assetChart" height="200"></canvas>
+  </div>
+  <div class="section-title">週次記録</div>
+  <div id="historyList"><div class="empty"><div class="empty-icon">📋</div>記録がまだありません</div></div>
+</div>
+
+<!-- ===== WATCHLIST ===== -->
+<div class="tab-content" id="tab-watchlist">
+
+  <!-- アラート設定 -->
+  <div class="section-title">📉 下落アラート設定</div>
+  <div class="alert-setting-card">
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">アプリを開くたびに自動チェック。下落検知時は画面上部に警告を表示します。</div>
+    <div class="alert-row">
+      <div class="alert-row-left">
+        <div class="alert-row-label">オルカン（全世界株）</div>
+        <div class="alert-row-sub">eMAXIS Slim 全世界株式</div>
+      </div>
+      <div class="alert-threshold">−7%</div>
+    </div>
+    <div class="alert-row">
+      <div class="alert-row-left">
+        <div class="alert-row-label">NASDAQ（QQQ）</div>
+        <div class="alert-row-sub">ナスダック100指数</div>
+      </div>
+      <div class="alert-threshold">−7%</div>
+    </div>
+    <div class="alert-row">
+      <div class="alert-row-left">
+        <div class="alert-row-label">FANG+（FNGU）</div>
+        <div class="alert-row-sub">テック大型株集中</div>
+      </div>
+      <div class="alert-threshold">−7%</div>
+    </div>
+    <div class="alert-row">
+      <div class="alert-row-left">
+        <div class="alert-row-label">SCHD（配当ETF）</div>
+        <div class="alert-row-sub">米国高配当株</div>
+      </div>
+      <div class="alert-threshold">−5%</div>
+    </div>
+  </div>
+
+  <!-- 手動チェック -->
+  <div class="section-title">📊 今日の下落率を手動チェック</div>
+  <div class="advice-card">
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">楽天証券で確認した前日比（%）を入力してください</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+      <div>
+        <div class="input-label" style="font-size:10px;color:var(--muted);margin-bottom:4px;">オルカン 前日比%</div>
+        <input type="number" step="0.1" class="input-field" id="chk-orukan" placeholder="-2.5" style="padding:8px 10px;font-size:13px;">
+      </div>
+      <div>
+        <div class="input-label" style="font-size:10px;color:var(--muted);margin-bottom:4px;">NASDAQ 前日比%</div>
+        <input type="number" step="0.1" class="input-field" id="chk-nasdaq" placeholder="-3.1" style="padding:8px 10px;font-size:13px;">
+      </div>
+      <div>
+        <div class="input-label" style="font-size:10px;color:var(--muted);margin-bottom:4px;">FANG+ 前日比%</div>
+        <input type="number" step="0.1" class="input-field" id="chk-fang" placeholder="-5.0" style="padding:8px 10px;font-size:13px;">
+      </div>
+      <div>
+        <div class="input-label" style="font-size:10px;color:var(--muted);margin-bottom:4px;">SCHD 前日比%</div>
+        <input type="number" step="0.1" class="input-field" id="chk-schd" placeholder="-1.2" style="padding:8px 10px;font-size:13px;">
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="manualCheck()">⚡ アラートチェック実行</button>
+    <div id="checkResult" class="check-result"></div>
+  </div>
+
+  <!-- 購入条件 -->
+  <div class="section-title">🎯 購入条件監視</div>
+  <div class="watch-card">
+    <div class="watch-header">
+      <div class="watch-name">三菱HCキャピタル（8593）</div>
+      <span class="watch-badge badge-watch">監視中</span>
+    </div>
+    <div class="watch-target">購入目標：¥1,125〜¥1,140 または 配当利回り ≥ 4%</div>
+  </div>
+  <div class="watch-card">
+    <div class="watch-header">
+      <div class="watch-name">丸紅（8002）</div>
+      <span class="watch-badge badge-watch">監視中</span>
+    </div>
+    <div class="watch-target">購入目標：¥5,000以下</div>
+  </div>
+  <div class="watch-card">
+    <div class="watch-header">
+      <div class="watch-name">MSTR（MicroStrategy）</div>
+      <span class="watch-badge badge-watch">監視中</span>
+    </div>
+    <div class="watch-target">売却目標：¥70万以上で利確（最悪ゼロ許容）</div>
+  </div>
+
+  <!-- クラッシュバイ -->
+  <div class="section-title" style="margin-top:4px;">🚨 クラッシュバイ条件</div>
+  <div class="watch-card" style="border-color:var(--warning);">
+    <div class="watch-target" style="color:var(--text);font-size:12px;line-height:1.8;">
+      <div>📉 S&P500 −20% 以上の下落</div>
+      <div>😱 VIX ≥ 40（恐怖指数）</div>
+      <div>📉 FANG+ −30% 以上</div>
+      <div>😰 市場全体に悲観ムード</div>
+    </div>
+    <div style="margin-top:10px;padding:10px;background:rgba(0,212,170,0.08);border-radius:8px;font-size:12px;color:var(--accent);">
+      → オルカン50% / FANG+30% / SCHD20% で仕込む
+    </div>
+  </div>
+
+  <!-- 積立スケジュール -->
+  <div class="section-title" style="margin-top:4px;">📅 月次積立</div>
+  <div class="monthly-card">
+    <div class="monthly-row"><span class="monthly-label">NISA積立</span><span class="monthly-val">¥300,000/月</span></div>
+    <div class="monthly-row"><span class="monthly-label">課税口座</span><span class="monthly-val">¥40,000/月</span></div>
+    <div class="monthly-row"><span class="monthly-label">合計</span><span class="monthly-val">¥340,000/月</span></div>
+    <div class="monthly-row"><span class="monthly-label">証券口座</span><span class="monthly-val">楽天証券</span></div>
+  </div>
+</div>
+
+<!-- ===== AI ADVICE ===== -->
+<div class="tab-content" id="tab-advice">
+  <div class="advice-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:13px;font-weight:600;">AIに投資相談する</div>
+      <div class="advice-badge">Claude AI</div>
+    </div>
+    <div style="margin-top:12px;">
+      <div class="input-group">
+        <label class="input-label">Anthropic APIキー</label>
+        <input type="password" class="input-field" id="anthropicKey" placeholder="sk-ant-..." style="font-size:12px;">
+      </div>
+      <textarea id="userQuestion" placeholder="例：今の資産配分で問題ありますか？オルカンを増やすべきですか？FANG+はいつ削減しますか？"></textarea>
+      <button class="btn btn-primary" onclick="askAI()">AIに聞く →</button>
+      <div id="aiAnswer" style="margin-top:12px;font-size:13px;line-height:1.7;display:none;"></div>
+    </div>
+  </div>
+  <div class="advice-card">
+    <div style="font-size:13px;font-weight:600;margin-bottom:10px;">📋 FIRE戦略メモ</div>
+    <div style="font-size:12px;line-height:1.8;color:var(--muted);">
+      <p>① <strong style="color:var(--text);">0〜8年（積立期）</strong>：FANG+・オルカン・S&P500で最大化</p>
+      <p>② <strong style="color:var(--text);">8〜13年（移行期）</strong>：FANG+を年4%削減 → SCHD・オルカンへ</p>
+      <p>③ <strong style="color:var(--text);">13年〜（完全FIRE）</strong>：配当¥28〜29万/月で生活</p>
+      <p style="margin-top:8px;">月次積立：NISA¥30万 ＋ 課税¥4万 ＝ <strong style="color:var(--accent);">¥34万/月</strong></p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== HOME SCREEN ===== -->
+<div class="tab-content" id="tab-home">
+  <div class="guide-card">
+    <div style="font-size:14px;font-weight:700;color:var(--accent);margin-bottom:16px;">📱 iPhoneホーム画面に追加する方法</div>
+    <div class="guide-step">
+      <div class="step-num">1</div>
+      <div class="step-text">このアプリを <strong>Safari</strong> で開く（Chromeではなく必ずSafariで）</div>
+    </div>
+    <div class="guide-step">
+      <div class="step-num">2</div>
+      <div class="step-text">画面下中央の <strong>「共有ボタン」（□↑）</strong> をタップ</div>
+    </div>
+    <div class="guide-step">
+      <div class="step-num">3</div>
+      <div class="step-text">メニューをスクロールして <strong>「ホーム画面に追加」</strong> をタップ</div>
+    </div>
+    <div class="guide-step">
+      <div class="step-num">4</div>
+      <div class="step-text">名前を <strong>「FIRE Dashboard」</strong> などに変更して <strong>「追加」</strong> をタップ</div>
+    </div>
+    <div class="guide-step">
+      <div class="step-num">5</div>
+      <div class="step-text">ホーム画面にアイコンが追加されます。次回からそこからアプリのように起動できます ✅</div>
+    </div>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;font-size:12px;color:var(--muted);line-height:1.7;">
+    <p>⚠️ <strong style="color:var(--text);">注意：</strong> このHTMLファイルはiPhone内に保存されているため、インターネット接続なしでも開けます。</p>
+    <p style="margin-top:6px;">入力した資産データはiPhone内（ブラウザのローカルストレージ）に保存されるため、アプリを閉じても消えません。</p>
+  </div>
+</div>
+
+</div><!-- end main -->
+
+<button class="fab" onclick="openModal()">＋</button>
+
+<!-- INPUT MODAL -->
+<div class="modal-bg" id="modalBg" onclick="closeModalBg(event)">
+  <div class="modal">
+    <div class="modal-title">📥 今週の資産を入力</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:16px;" id="modalDate"></div>
+    <div class="input-group">
+      <label class="input-label">S&P500 ETF（SPY・eMAXIS等）</label>
+      <input type="number" class="input-field" id="in-sp500" placeholder="4000000">
+      <div class="input-hint">円単位（例：400万円 → 4000000）</div>
+    </div>
+    <div class="input-group">
+      <label class="input-label">FANG+</label>
+      <input type="number" class="input-field" id="in-fang" placeholder="2500000">
+    </div>
+    <div class="input-group">
+      <label class="input-label">SCHD（配当ETF）</label>
+      <input type="number" class="input-field" id="in-schd" placeholder="2000000">
+    </div>
+    <div class="input-group">
+      <label class="input-label">オールカントリ（オルカン）</label>
+      <input type="number" class="input-field" id="in-orukan" placeholder="2000000">
+    </div>
+    <div class="input-group">
+      <label class="input-label">MSTR（MicroStrategy）</label>
+      <input type="number" class="input-field" id="in-mstr" placeholder="500000">
+    </div>
+    <div class="input-group">
+      <label class="input-label">ゴールド（GLD等）</label>
+      <input type="number" class="input-field" id="in-gold" placeholder="200000">
+    </div>
+    <div class="input-group">
+      <label class="input-label">その他（日本株・現金等）</label>
+      <input type="number" class="input-field" id="in-other" placeholder="0">
+    </div>
+    <button class="btn btn-primary" onclick="saveEntry()">✓ 保存する</button>
+    <button class="btn btn-outline" onclick="closeModal()">キャンセル</button>
+  </div>
+</div>
+
+<script>
+const HOLDINGS_DEF = [
+  {key:'sp500', name:'S&P500 ETF', color:'#3b82f6'},
+  {key:'fang',  name:'FANG+',      color:'#8b5cf6'},
+  {key:'schd',  name:'SCHD 配当ETF',color:'#10b981'},
+  {key:'orukan',name:'オールカントリ',color:'#00d4aa'},
+  {key:'mstr',  name:'MSTR',       color:'#f59e0b'},
+  {key:'gold',  name:'ゴールド',    color:'#fbbf24'},
+  {key:'other', name:'その他',      color:'#64748b'},
+];
+
+// アラート閾値
+const ALERT_RULES = [
+  {key:'orukan', label:'オルカン（全世界株）', threshold:-7},
+  {key:'nasdaq', label:'NASDAQ',              threshold:-7},
+  {key:'fang',   label:'FANG+',               threshold:-7},
+  {key:'schd',   label:'SCHD',                threshold:-5},
+];
+
+function loadHistory(){try{return JSON.parse(localStorage.getItem('fire_history')||'[]');}catch(e){return[];}}
+function saveHistory(h){localStorage.setItem('fire_history',JSON.stringify(h));}
+
+// ========================
+// TABS
+// ========================
+function switchTab(name,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='history') renderHistory();
+}
+
+// ========================
+// MANUAL CHECK
+// ========================
+function manualCheck(){
+  const vals = {
+    orukan: parseFloat(document.getElementById('chk-orukan').value),
+    nasdaq: parseFloat(document.getElementById('chk-nasdaq').value),
+    fang:   parseFloat(document.getElementById('chk-fang').value),
+    schd:   parseFloat(document.getElementById('chk-schd').value),
+  };
+
+  const triggered = [];
+  ALERT_RULES.forEach(rule => {
+    const v = vals[rule.key];
+    if (!isNaN(v) && v <= rule.threshold) {
+      triggered.push({...rule, actual: v});
+    }
+  });
+
+  const resultEl = document.getElementById('checkResult');
+  resultEl.classList.add('show');
+
+  if (triggered.length === 0) {
+    resultEl.className = 'check-result show check-ok';
+    resultEl.innerHTML = '✅ アラート条件に該当する下落はありません';
+    clearAlertBanners();
+  } else {
+    resultEl.className = 'check-result show check-ng';
+    resultEl.innerHTML = '🚨 ' + triggered.map(t => `${t.label}が${t.actual}%下落（閾値${t.threshold}%）`).join('、');
+    showAlertBanners(triggered);
+  }
+}
+
+function showAlertBanners(triggered){
+  const container = document.getElementById('alertBanners');
+  container.innerHTML = `
+    <div class="alert-banner show">
+      <div class="alert-item alert-critical">
+        <div class="alert-icon">🚨</div>
+        <div class="alert-text">
+          <div class="alert-title">下落アラート検知！</div>
+          ${triggered.map(t=>`<div>${t.label}：${t.actual}% 下落（閾値 ${t.threshold}%）</div>`).join('')}
+        </div>
+        <div class="alert-close" onclick="clearAlertBanners()">✕</div>
+      </div>
+    </div>`;
+  document.getElementById('alertCount').textContent = `🚨 ${triggered.length}件`;
+
+  // クラッシュバイ判定
+  const severe = triggered.filter(t => t.actual <= t.threshold * 1.5);
+  if (severe.length >= 2) {
+    container.innerHTML += `
+      <div class="alert-banner show" style="margin-top:6px;">
+        <div class="alert-item alert-warning">
+          <div class="alert-icon">💰</div>
+          <div class="alert-text">
+            <div class="alert-title">クラッシュバイ検討タイミングかもしれません</div>
+            <div>オルカン50% / FANG+30% / SCHD20% の比率で買い増しを検討</div>
+          </div>
+          <div class="alert-close" onclick="this.closest('.alert-banner').remove()">✕</div>
+        </div>
+      </div>`;
+  }
+}
+
+function clearAlertBanners(){
+  document.getElementById('alertBanners').innerHTML='';
+  document.getElementById('alertCount').textContent='';
+}
+
+// ========================
+// MODAL
+// ========================
+function openModal(){
+  const history=loadHistory();
+  const last=history[history.length-1];
+  if(last){HOLDINGS_DEF.forEach(h=>{const el=document.getElementById('in-'+h.key);if(el&&last[h.key])el.value=last[h.key];});}
+  document.getElementById('modalDate').textContent='記録日：'+formatDate(new Date());
+  document.getElementById('modalBg').classList.add('open');
+}
+function closeModal(){document.getElementById('modalBg').classList.remove('open');}
+function closeModalBg(e){if(e.target===document.getElementById('modalBg'))closeModal();}
+
+function saveEntry(){
+  const entry={date:new Date().toISOString()};
+  let total=0;
+  HOLDINGS_DEF.forEach(h=>{
+    const val=parseInt(document.getElementById('in-'+h.key).value)||0;
+    entry[h.key]=val; total+=val;
+  });
+  entry.total=total;
+  const history=loadHistory();
+  history.push(entry);
+  saveHistory(history);
+  closeModal();
+  renderPortfolio(entry);
+  document.getElementById('lastUpdate').textContent='最終更新: '+formatDate(new Date());
+}
+
+// ========================
+// PORTFOLIO
+// ========================
+function renderPortfolio(entry){
+  if(!entry)return;
+  const total=entry.total;
+  document.getElementById('totalVal').textContent=Math.round(total/10000).toLocaleString();
+  document.getElementById('totalSub').textContent='¥'+total.toLocaleString()+' 円';
+  const pct=Math.min((total/67500000)*100,100);
+  document.getElementById('firePercent').textContent=pct.toFixed(1)+'%';
+  document.getElementById('fireFill').style.width=pct+'%';
+  const grid=document.getElementById('holdingGrid');
+  grid.innerHTML='';
+  HOLDINGS_DEF.forEach(h=>{
+    const val=entry[h.key]||0;
+    if(!val)return;
+    const p=total>0?(val/total*100):0;
+    const div=document.createElement('div');
+    div.className='holding-card';
+    div.innerHTML=`
+      <div><div class="holding-name">${h.name}</div><div class="holding-ticker">${p.toFixed(1)}% of portfolio</div></div>
+      <div><div class="holding-value" style="color:${h.color}">¥${Math.round(val/10000).toLocaleString()}万</div><div class="holding-pct neutral">${val.toLocaleString()}円</div></div>
+      <div class="holding-bar"><div class="holding-fill" style="width:${p}%;background:${h.color}"></div></div>`;
+    grid.appendChild(div);
+  });
+}
+
+// ========================
+// HISTORY
+// ========================
+function renderHistory(){
+  const history=loadHistory();
+  const list=document.getElementById('historyList');
+  if(!history.length){
+    list.innerHTML='<div class="empty"><div class="empty-icon">📋</div>記録がまだありません</div>';
+    renderChart([]);return;
+  }
+  const rev=[...history].reverse();
+  list.innerHTML=rev.map((e,i)=>{
+    const prev=rev[i+1];
+    const ch=prev?e.total-prev.total:null;
+    const chStr=ch!==null?`<span class="${ch>=0?'up':'down'}">${ch>=0?'▲':'▼'}¥${Math.abs(Math.round(ch/10000)).toLocaleString()}万</span>`:'<span class="neutral">初回</span>';
+    return`<div class="history-item"><div><div class="history-date">${formatDate(new Date(e.date))}</div><div style="margin-top:4px;">${chStr}</div></div><div class="history-total">¥${Math.round(e.total/10000).toLocaleString()}万</div></div>`;
+  }).join('');
+  renderChart(history);
+}
+
+function renderChart(history){
+  const canvas=document.getElementById('assetChart');
+  const ctx=canvas.getContext('2d');
+  canvas.width=canvas.offsetWidth*window.devicePixelRatio;
+  canvas.height=200*window.devicePixelRatio;
+  ctx.scale(window.devicePixelRatio,window.devicePixelRatio);
+  const W=canvas.offsetWidth,H=200;
+  ctx.clearRect(0,0,W,H);
+  if(history.length<2){
+    ctx.fillStyle='#64748b';ctx.font='12px sans-serif';ctx.textAlign='center';
+    ctx.fillText('2回以上記録するとグラフが表示されます',W/2,H/2);return;
+  }
+  const vals=history.map(e=>e.total);
+  const min=Math.min(...vals)*0.95,max=Math.max(...vals)*1.05;
+  const pad={top:20,right:16,bottom:30,left:54};
+  const gW=W-pad.left-pad.right,gH=H-pad.top-pad.bottom;
+  const toX=i=>pad.left+(i/(vals.length-1))*gW;
+  const toY=v=>pad.top+gH-((v-min)/(max-min))*gH;
+
+  ctx.strokeStyle='#1e2d45';ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){
+    const y=pad.top+(gH/4)*i;
+    ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(pad.left+gW,y);ctx.stroke();
+    const v=max-((max-min)/4)*i;
+    ctx.fillStyle='#64748b';ctx.font='9px sans-serif';ctx.textAlign='right';
+    ctx.fillText('¥'+Math.round(v/10000)+'万',pad.left-4,y+3);
+  }
+  const fireY=toY(67500000);
+  if(fireY>pad.top&&fireY<pad.top+gH){
+    ctx.strokeStyle='#00d4aa44';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.moveTo(pad.left,fireY);ctx.lineTo(pad.left+gW,fireY);ctx.stroke();
+    ctx.fillStyle='#00d4aa';ctx.font='9px sans-serif';ctx.textAlign='left';
+    ctx.fillText('サイドFIRE目標',pad.left+4,fireY-3);
+    ctx.setLineDash([]);
+  }
+  const grad=ctx.createLinearGradient(0,pad.top,0,pad.top+gH);
+  grad.addColorStop(0,'rgba(0,212,170,0.3)');grad.addColorStop(1,'rgba(0,212,170,0)');
+  ctx.beginPath();ctx.moveTo(toX(0),toY(vals[0]));
+  vals.forEach((v,i)=>{if(i>0)ctx.lineTo(toX(i),toY(v));});
+  ctx.lineTo(toX(vals.length-1),pad.top+gH);ctx.lineTo(toX(0),pad.top+gH);ctx.closePath();
+  ctx.fillStyle=grad;ctx.fill();
+  ctx.strokeStyle='#00d4aa';ctx.lineWidth=2;ctx.lineJoin='round';
+  ctx.beginPath();vals.forEach((v,i)=>{i===0?ctx.moveTo(toX(i),toY(v)):ctx.lineTo(toX(i),toY(v));});ctx.stroke();
+  vals.forEach((v,i)=>{
+    ctx.beginPath();ctx.arc(toX(i),toY(v),4,0,Math.PI*2);
+    ctx.fillStyle='#00d4aa';ctx.fill();ctx.strokeStyle='#0a0e1a';ctx.lineWidth=2;ctx.stroke();
+  });
+  ctx.fillStyle='#64748b';ctx.font='9px sans-serif';ctx.textAlign='center';
+  const step=Math.max(1,Math.floor(history.length/4));
+  history.forEach((e,i)=>{
+    if(i%step===0||i===history.length-1){
+      const d=new Date(e.date);
+      ctx.fillText(`${d.getMonth()+1}/${d.getDate()}`,toX(i),H-pad.bottom+14);
+    }
+  });
+}
+
+// ========================
+// AI
+// ========================
+async function askAI(){
+  const key=document.getElementById('anthropicKey').value.trim();
+  const q=document.getElementById('userQuestion').value.trim();
+  const ansEl=document.getElementById('aiAnswer');
+  if(!key){alert('Anthropic APIキーを入力してください');return;}
+  if(!q){alert('質問を入力してください');return;}
+  localStorage.setItem('anthropic_key',key);
+  ansEl.style.display='block';
+  ansEl.innerHTML='<span class="spinner"></span>考え中...';
+  const history=loadHistory();
+  const latest=history[history.length-1];
+  const ctx2=latest?`総資産¥${Math.round(latest.total/10000)}万（S&P500:¥${Math.round((latest.sp500||0)/10000)}万、FANG+:¥${Math.round((latest.fang||0)/10000)}万、SCHD:¥${Math.round((latest.schd||0)/10000)}万、オルカン:¥${Math.round((latest.orukan||0)/10000)}万）`:'資産データなし';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,messages:[{role:'user',content:`あなたは大本晃正さん（愛媛県大洲市、鉄筋会社代表取締役、FIRE目標¥6,750万/8年後）の専属投資アドバイザーです。現在の資産：${ctx2}。月次積立¥34万。質問：${q}。簡潔に日本語でアドバイスをください。`}]})
+    });
+    const data=await res.json();
+    const text=data.content?.[0]?.text||'取得失敗';
+    ansEl.innerHTML=text.split('\n').filter(l=>l).map(l=>`<p style="margin-bottom:8px;">${l}</p>`).join('');
+  }catch(e){ansEl.innerHTML='<p style="color:var(--red);">エラーが発生しました。</p>';}
+}
+
+function formatDate(d){return`${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;}
+
+window.onload=()=>{
+  const h=loadHistory();
+  if(h.length>0){renderPortfolio(h[h.length-1]);document.getElementById('lastUpdate').textContent='最終更新: '+formatDate(new Date(h[h.length-1].date));}
+  const k=localStorage.getItem('anthropic_key');
+  if(k)document.getElementById('anthropicKey').value=k;
+};
+</script>
+</body>
+</html>
