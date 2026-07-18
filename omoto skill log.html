@@ -38,7 +38,8 @@
   }
   .pixel{font-family:'Press Start 2P',monospace;}
   .mono{font-family:'JetBrains Mono',monospace;}
-  #loading{display:flex;align-items:center;justify-content:center;height:100vh;color:var(--amber);font-family:'Press Start 2P',monospace;font-size:11px;letter-spacing:1px;}
+  #loading{position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center;text-align:center;padding:24px;background:var(--bg);color:var(--amber);font-family:'Press Start 2P',monospace;font-size:11px;letter-spacing:1px;}
+  #loading .sub{font-family:'Zen Kaku Gothic New',sans-serif;font-size:12px;color:var(--dim);letter-spacing:0;line-height:1.7;max-width:320px;white-space:pre-line;}
   #app{max-width:720px;margin:0 auto;padding:14px 12px 0;}
   header.top{display:flex;align-items:center;justify-content:space-between;padding:10px 4px 14px;border-bottom:2px dashed var(--line);margin-bottom:14px;}
   header.top .title{font-family:'Press Start 2P',monospace;font-size:12px;line-height:1.8;color:var(--amber);letter-spacing:.5px;}
@@ -128,7 +129,7 @@
 </style>
 </head>
 <body>
-<div id="loading">LOADING...</div>
+<div id="loading">LOADING...<div class="sub" id="loadingSub"></div></div>
 <div id="app" hidden>
   <header class="top">
     <div class="title">大本鉄筋<span>SKILL LOG / 育成ログ</span></div>
@@ -300,6 +301,7 @@ const SEED_EMPLOYEES = [
   {id:'izumihara',name:'泉原',team:'A'},{id:'kido',name:'城戸',team:'A'},{id:'tsuzuki',name:'都築',team:'A'},
   {id:'sugihara',name:'杉原',team:'A'},{id:'nishizaki',name:'西崎',team:'A'},
   {id:'yamazaki',name:'山﨑',team:'B'},{id:'masato',name:'雅人',team:'B'},{id:'ohmotos',name:'大本汐',team:'B'},{id:'miyakoda',name:'都田',team:'B'},
+  {id:'kyohei',name:'恭平',team:'P',partTime:true},
   {id:'okamoto',name:'岡本',team:'P',partTime:true},
   {id:'oyama',name:'尾山',team:'P',partTime:true},
   {id:'ito',name:'伊藤',team:'P',partTime:true},
@@ -357,7 +359,7 @@ async function storeSet(key, val){
       const raw = {};
       Object.keys(val).forEach(name=>{
         const id = empIdByName(name);
-        if(!id) return; // パート従業員など対象外
+        if(!id) return; // サポートメンバー従業員など対象外
         raw[id] = (val[name]||[]).map(r=> ({site:r.site||'', category:r.category||'', unitPrice:Number(r.price)||0}));
       });
       await setDoc(doc(db,'config','setup'), raw);
@@ -545,7 +547,7 @@ function renderComments(){
   const list = $('#commentList');
   list.innerHTML = employees.map(emp=>`
     <div class="log-item">
-      <div class="d">${escapeHtml(emp.name)}${emp.partTime? '（パート）':''}</div>
+      <div class="d">${escapeHtml(emp.name)}${emp.partTime? '（サポートメンバー）':''}</div>
       <div class="tags">${escapeHtml(generateComment(emp))}</div>
     </div>`).join('') || '<div class="empty">社員未登録</div>';
 }
@@ -755,8 +757,9 @@ function drawAvatar(canvas, name, team, job, badge, scale){
   let skin = SKIN[Math.floor(rnd()*SKIN.length)];
   let hair = HAIR[Math.floor(rnd()*HAIR.length)];
 
-  // パート従業員は職業コスチュームより先に、個人の外見的特徴を優先する
+  // サポートメンバー従業員は職業コスチュームより先に、個人の外見的特徴を優先する
   const PART_TIME = {
+    '恭平': {skin:'#dba977', hair:'#f0d34a'},
     '岡本': {skin:'#a9714f', hair:'#1c1c1c', wide:true},
     '尾山': {skin:'#e8c9a0', hair:'#c7c7c7', gap:true},
     '伊藤': {skin:'#f0c9a0', hair:'#f0d34a', longHair:true, skirt:'#e85f9c'},
@@ -800,7 +803,7 @@ function drawAvatar(canvas, name, team, job, badge, scale){
     }
   }
 
-  // パート従業員の個別の特徴付け
+  // サポートメンバー従業員の個別の特徴付け
   if(pt && pt.wide){
     // 岡本：大柄で筋肉質 → 肩・腕を一段広く、力こぶのハイライトを追加
     ctx.fillStyle = st.body;
@@ -1136,7 +1139,7 @@ function renderSettings(){
       <select data-field="team">
         <option value="A" ${e.team==='A'?'selected':''}>TEAM A</option>
         <option value="B" ${e.team==='B'?'selected':''}>TEAM B</option>
-        <option value="P" ${e.team==='P'?'selected':''}>パート</option>
+        <option value="P" ${e.team==='P'?'selected':''}>サポートメンバー</option>
       </select>
       <button data-action="del">✕</button>
     </div>
@@ -1311,9 +1314,30 @@ async function init(){
   $('#app').hidden = false;
 }
 
+// 読み込みが固まった場合に、白紙のLOADING表示のままにせず状況を画面に出す
+function showLoadingDiag(msg){
+  const el = $('#loadingSub');
+  if(el) el.textContent = msg;
+}
+window.addEventListener('error', (e)=>{
+  if(!$('#app') || $('#app').hidden){
+    showLoadingDiag('エラー: ' + (e.message || '不明なエラー') + '\n通信環境を確認して再読み込みしてください。');
+  }
+});
+window.addEventListener('unhandledrejection', (e)=>{
+  if(!$('#app') || $('#app').hidden){
+    showLoadingDiag('エラー: ' + (e.reason && e.reason.message ? e.reason.message : String(e.reason)) + '\n通信環境を確認して再読み込みしてください。');
+  }
+});
+setTimeout(()=>{
+  if($('#app') && $('#app').hidden){
+    showLoadingDiag('読み込みに時間がかかっています。Wi-Fi/モバイル通信をご確認のうえ、\n画面を下に引っぱって再読み込みしてください。');
+  }
+}, 8000);
+
 init().catch(err=>{
   console.error(err);
-  $('#loading').textContent = 'エラーが発生しました。再読み込みしてください。';
+  showLoadingDiag('エラー: ' + (err && err.message ? err.message : String(err)) + '\n再読み込みしてください。');
 });
 })();
 </script>
