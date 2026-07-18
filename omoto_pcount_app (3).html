@@ -332,6 +332,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBJjjHmXhtZk1uRLZcd6r8_QEoTGoR8QZQ",
@@ -344,6 +345,17 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+// Firestoreルールで request.auth != null を要求できるよう、匿名認証で自動サインインする
+// （omoto skill log.html と同じFirebaseプロジェクトを共有しているため、認証方式も揃える）
+const auth = getAuth(app);
+try{
+  await signInAnonymously(auth);
+}catch(e){
+  console.error('匿名認証に失敗しました', e);
+  const statusEl = document.getElementById('syncStatus');
+  if(statusEl) statusEl.textContent = '認証に失敗しました（' + (e && e.message ? e.message : String(e)) + '）';
+}
 
 // ========================
 // CONSTANTS

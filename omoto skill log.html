@@ -302,9 +302,11 @@ try{
   // 動的importにすることで、読み込み失敗を確実にtry/catchで捕まえられるようにしている
   const appMod = await import("https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js");
   const fsMod  = await import("https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js");
+  const authMod = await import("https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js");
   initializeApp = appMod.initializeApp;
   getFirestore = fsMod.getFirestore; doc = fsMod.doc; setDoc = fsMod.setDoc;
   getDoc = fsMod.getDoc; collection = fsMod.collection; onSnapshot = fsMod.onSnapshot;
+  const getAuth = authMod.getAuth; const signInAnonymously = authMod.signInAnonymously;
 
   // 既存の「大本 P数管理」アプリと同じFirebaseプロジェクトに接続します
   const firebaseConfig = {
@@ -317,6 +319,13 @@ try{
   };
   const fbApp = initializeApp(firebaseConfig);
   db = getFirestore(fbApp);
+
+  // Firestoreルールで request.auth != null を要求できるよう、匿名認証で自動サインインする
+  const auth = getAuth(fbApp);
+  await Promise.race([
+    signInAnonymously(auth),
+    new Promise((_, reject)=> setTimeout(()=> reject(new Error('匿名認証がタイムアウトしました')), 7000))
+  ]);
 }catch(e){
   earlyDiag('Firebaseへの接続に失敗しました: ' + (e && e.message ? e.message : String(e)) + '\nこの画面のスクショを送ってください。');
   return;
@@ -1069,7 +1078,12 @@ async function saveLog(){
   const mk = monthOf(date);
   if(!logsByMonth[mk]) logsByMonth[mk] = [];
   logsByMonth[mk].push(entry);
-  await storeSet('logs:'+mk, logsByMonth[mk]);
+  const ok = await storeSet('logs:'+mk, logsByMonth[mk]);
+  if(!ok){
+    logsByMonth[mk].pop();
+    alert('保存に失敗しました。通信状況を確認してもう一度お試しください。');
+    return;
+  }
   $('#inpNote').value='';
   renderInputTab();
   renderRoster();
