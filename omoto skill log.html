@@ -190,14 +190,17 @@
     <div class="card">
       <h2>📥 今日の記録を入力</h2>
       <p style="font-size:12px;color:var(--dim);margin:0 0 8px;">個人の能力は社長・泉原・山﨑の3名がそれぞれ入力し、表示されるステータスはその平均値です。</p>
-      <label class="f">対象社員</label>
-      <select id="inpEmployee"></select>
-      <label class="f">記録日</label>
-      <input type="date" id="inpDate">
-      <div id="inpScores" style="margin-top:12px;"></div>
-      <label class="f">メモ（良かった判断・困ったこと）</label>
-      <textarea id="inpNote" rows="3" placeholder="例）追加工事の口頭依頼を、断る条件どおり保留にできた"></textarea>
-      <button class="btn" id="saveLogBtn">✓ この内容で保存する</button>
+      <div id="inputLocked" class="empty" hidden>🔒 記録の入力には社長・泉原・山﨑いずれかでのログインが必要です。右上のログインから入力してください。</div>
+      <div id="inputForm">
+        <label class="f">対象社員</label>
+        <select id="inpEmployee"></select>
+        <label class="f">記録日</label>
+        <input type="date" id="inpDate">
+        <div id="inpScores" style="margin-top:12px;"></div>
+        <label class="f">メモ（良かった判断・困ったこと）</label>
+        <textarea id="inpNote" rows="3" placeholder="例）追加工事の口頭依頼を、断る条件どおり保留にできた"></textarea>
+        <button class="btn" id="saveLogBtn">✓ この内容で保存する</button>
+      </div>
     </div>
   </section>
 
@@ -1075,6 +1078,18 @@ function renderRoster(){
 }
 
 function renderInputTab(){
+  const locked = $('#inputLocked');
+  const form = $('#inputForm');
+  // 記録タブは社長・泉原・山﨑いずれかのログインが無いと操作自体をさせない
+  // （保存ボタンのrequireRoleだけでは、未ログインでも社員選択・スコア入力・メモ入力ができてしまうため）
+  if(!currentRole){
+    if(locked) locked.hidden = false;
+    if(form) form.hidden = true;
+    return;
+  }
+  if(locked) locked.hidden = true;
+  if(form) form.hidden = false;
+
   const sel = $('#inpEmployee');
   sel.innerHTML = employees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}（${e.team}）</option>`).join('') || '<option>社員未登録</option>';
   if(!$('#inpDate').value) $('#inpDate').value = todayStr();
