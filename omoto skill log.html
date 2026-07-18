@@ -130,6 +130,27 @@
 </head>
 <body>
 <div id="loading">LOADING...<div class="sub" id="loadingSub"></div></div>
+<script>
+// これは type="module" ではない、独立した監視スクリプト。
+// Firebase側のimport自体が失敗した場合でも、こちらは必ず動作して状況を表示する。
+(function(){
+  function checkStuck(){
+    var app = document.getElementById('app');
+    var sub = document.getElementById('loadingSub');
+    if(app && app.hidden && sub && !sub.textContent){
+      sub.textContent = '読み込みが完了していません。考えられる原因:\n・Firebase読み込み(gstatic.com)が通信環境でブロックされている\n・広告/トラッキングブロッカーが動作している\n・電波状況が不安定\n\nWi-Fiとモバイル通信を切り替えて再読み込みしてみてください。改善しない場合はこの画面のスクショを送ってください。';
+    }
+  }
+  setTimeout(checkStuck, 6000);
+  window.addEventListener('error', function(e){
+    var app = document.getElementById('app');
+    var sub = document.getElementById('loadingSub');
+    if((!app || app.hidden) && sub){
+      sub.textContent = '読み込みエラー: ' + (e.message||'不明') + (e.filename? ('\n('+e.filename+')') : '') + '\nこの画面のスクショを送ってください。';
+    }
+  }, true);
+})();
+</script>
 <div id="app" hidden>
   <header class="top">
     <div class="title">大本鉄筋<span>SKILL LOG / 育成ログ</span></div>
