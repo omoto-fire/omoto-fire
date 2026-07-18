@@ -291,21 +291,35 @@
   </section>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+<script>
+(async function(){
+"use strict";
+function earlyDiag(msg){ const el = document.getElementById('loadingSub'); if(el) el.textContent = msg; }
 
-// 既存の「大本 P数管理」アプリと同じFirebaseプロジェクトに接続します
-const firebaseConfig = {
-  apiKey: "AIzaSyBJjjHmXhtZk1uRLZcd6r8_QEoTGoR8QZQ",
-  authDomain: "tekkinnkanri.firebaseapp.com",
-  projectId: "tekkinnkanri",
-  storageBucket: "tekkinnkanri.firebasestorage.app",
-  messagingSenderId: "37454804443",
-  appId: "1:37454804443:web:ff1fc6536d5ade76b123fe"
-};
-const fbApp = initializeApp(firebaseConfig);
-const db = getFirestore(fbApp);
+let initializeApp, getFirestore, doc, setDoc, getDoc, collection, onSnapshot, db;
+try{
+  // 動的importにすることで、読み込み失敗を確実にtry/catchで捕まえられるようにしている
+  const appMod = await import("https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js");
+  const fsMod  = await import("https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js");
+  initializeApp = appMod.initializeApp;
+  getFirestore = fsMod.getFirestore; doc = fsMod.doc; setDoc = fsMod.setDoc;
+  getDoc = fsMod.getDoc; collection = fsMod.collection; onSnapshot = fsMod.onSnapshot;
+
+  // 既存の「大本 P数管理」アプリと同じFirebaseプロジェクトに接続します
+  const firebaseConfig = {
+    apiKey: "AIzaSyBJjjHmXhtZk1uRLZcd6r8_QEoTGoR8QZQ",
+    authDomain: "tekkinnkanri.firebaseapp.com",
+    projectId: "tekkinnkanri",
+    storageBucket: "tekkinnkanri.firebasestorage.app",
+    messagingSenderId: "37454804443",
+    appId: "1:37454804443:web:ff1fc6536d5ade76b123fe"
+  };
+  const fbApp = initializeApp(firebaseConfig);
+  db = getFirestore(fbApp);
+}catch(e){
+  earlyDiag('Firebaseへの接続に失敗しました: ' + (e && e.message ? e.message : String(e)) + '\nこの画面のスクショを送ってください。');
+  return;
+}
 
 (function(){
 "use strict";
@@ -1369,6 +1383,7 @@ init().catch(err=>{
   console.error(err);
   showLoadingDiag('エラー: ' + (err && err.message ? err.message : String(err)) + '\n再読み込みしてください。');
 });
+})();
 })();
 </script>
 </body>
