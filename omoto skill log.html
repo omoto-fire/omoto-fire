@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="育成ログ">
+<title>大本鉄筋 育成ログ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#171b24;
+    --panel:#212734;
+    --panel-2:#2a3140;
+    --line:#3a4356;
+    --steel:#5b6b85;
+    --amber:#f5a623;
+    --amber-dim:#8a611c;
+    --cream:#ece7d8;
+    --dim:#8b93a7;
+    --xp:#7ec850;
+    --teamA:#4d8fd6;
+    --teamB:#e0672c;
+    --teamP:#9a8fae;
+    --gold:#ffd166;
+    --danger:#e2564f;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--cream);font-family:'Zen Kaku Gothic New',sans-serif;-webkit-tap-highlight-color:transparent;}
+  body{padding-bottom:70px;min-height:100vh;background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:26px 26px; background-position:-1px -1px; background-attachment:fixed;
+    background-color:var(--bg);
+  }
+  .pixel{font-family:'Press Start 2P',monospace;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  #loading{display:flex;align-items:center;justify-content:center;height:100vh;color:var(--amber);font-family:'Press Start 2P',monospace;font-size:11px;letter-spacing:1px;}
+  #app{max-width:720px;margin:0 auto;padding:14px 12px 0;}
+  header.top{display:flex;align-items:center;justify-content:space-between;padding:10px 4px 14px;border-bottom:2px dashed var(--line);margin-bottom:14px;}
+  header.top .title{font-family:'Press Start 2P',monospace;font-size:12px;line-height:1.8;color:var(--amber);letter-spacing:.5px;}
+  header.top .title span{display:block;font-family:'Zen Kaku Gothic New',sans-serif;font-size:11px;color:var(--dim);letter-spacing:2px;margin-top:2px;}
+  .bossbtn{background:var(--panel-2);border:1px solid var(--line);color:var(--cream);padding:7px 10px;border-radius:8px;font-size:12px;display:flex;gap:6px;align-items:center;cursor:pointer;}
+  .bossbtn.on{background:var(--amber);color:#1a1300;border-color:var(--amber);font-weight:700;}
+
+  nav.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;margin-bottom:14px;border-bottom:1px solid var(--line);}
+  nav.tabs button{flex:0 0 auto;background:none;border:none;color:var(--dim);font-size:13px;font-weight:700;padding:8px 12px;border-radius:8px 8px 0 0;cursor:pointer;}
+  nav.tabs button.active{color:var(--amber);background:var(--panel);border-bottom:3px solid var(--amber);}
+
+  section{display:none;}
+  section.active{display:block;animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:12px;}
+  .card h2{margin:0 0 10px;font-size:14px;color:var(--amber);letter-spacing:.5px;display:flex;align-items:center;gap:6px;}
+  .empty{color:var(--dim);font-size:13px;text-align:center;padding:24px 8px;}
+
+  .roster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;}
+  .emp-card{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:8px 6px 10px;text-align:center;cursor:pointer;position:relative;transition:transform .12s;}
+  .emp-card:active{transform:scale(.96);}
+  .emp-card canvas{image-rendering:pixelated;display:block;margin:0 auto 6px;}
+  .emp-card .nm{font-size:12px;font-weight:700;color:var(--cream);}
+  .emp-card .lv{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--amber);margin-top:2px;}
+  .emp-card .team-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;}
+  .xpbar{height:5px;background:#111522;border-radius:3px;overflow:hidden;margin-top:5px;}
+  .xpbar i{display:block;height:100%;background:linear-gradient(90deg,var(--xp),#a6e07f);}
+  .ratio-badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;
+    color:#1a1300;background:var(--amber);padding:1px 7px;border-radius:7px;margin:-2px 0 4px;}
+  .detail-head .ratio-badge{margin:4px 0 0;}
+
+  select,input[type=text],input[type=date],input[type=number],textarea{
+    width:100%;background:#111522;border:1px solid var(--line);color:var(--cream);
+    padding:10px;border-radius:8px;font-size:14px;font-family:'Zen Kaku Gothic New',sans-serif;
+  }
+  label.f{display:block;font-size:12px;color:var(--dim);margin:10px 0 5px;}
+  .btn{background:var(--amber);color:#1a1300;border:none;padding:11px 16px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;width:100%;margin-top:14px;}
+  .btn.secondary{background:var(--panel-2);color:var(--cream);border:1px solid var(--line);}
+  .btn.danger{background:var(--danger);color:#2a0805;}
+  .btn:disabled{opacity:.5;}
+
+  .score-row{display:flex;align-items:center;justify-content:space-between;background:#111522;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:8px;}
+  .score-row .lbl{font-size:13px;}
+  .score-row .stars{display:flex;gap:4px;}
+  .score-row .stars button{width:30px;height:30px;border-radius:6px;border:1px solid var(--line);background:#171b24;color:var(--dim);font-size:13px;font-weight:700;cursor:pointer;}
+  .score-row .stars button.sel{background:var(--amber);color:#1a1300;border-color:var(--amber);}
+
+  .backbtn{background:none;border:none;color:var(--dim);font-size:13px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;gap:4px;}
+
+  .detail-head{display:flex;gap:14px;align-items:center;}
+  .detail-head canvas{image-rendering:pixelated;}
+  .detail-head .meta .nm{font-size:16px;font-weight:900;}
+  .detail-head .meta .lv{font-family:'JetBrains Mono',monospace;color:var(--amber);font-size:13px;margin-top:2px;}
+  .detail-head .meta .team{font-size:11px;color:var(--dim);margin-top:2px;}
+
+  .log-item{border-left:3px solid var(--amber-dim);padding:6px 0 6px 10px;margin-bottom:8px;}
+  .log-item .d{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);}
+  .log-item .tags{font-size:12px;margin:3px 0;color:var(--cream);}
+  .log-item .note{font-size:12px;color:var(--dim);font-style:italic;}
+
+  .pinbox{position:fixed;inset:0;background:rgba(10,12,18,.85);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px;}
+  .pinbox .inner{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;max-width:280px;width:100%;text-align:center;}
+  .pinbox .inner h3{margin:0 0 10px;font-size:14px;color:var(--amber);}
+
+  .emplist-row{display:flex;gap:8px;align-items:center;background:#111522;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:8px;}
+  .emplist-row input[type=text]{flex:1;}
+  .emplist-row select{width:auto;flex:0 0 100px;}
+  .emplist-row button{background:var(--danger);color:#fff;border:none;border-radius:6px;width:32px;height:32px;font-size:14px;cursor:pointer;}
+
+  .price-block{border:1px solid var(--line);border-radius:12px;padding:14px 12px;margin-bottom:12px;background:#141926;}
+  .price-block .pb-name{font-weight:900;font-size:15px;display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+  .price-block .pb-name .dot{width:9px;height:9px;border-radius:50%;}
+  .price-row{display:grid;grid-template-columns:1.2fr 1fr 84px 30px;gap:8px;margin-top:10px;align-items:end;}
+  .price-row .pfield label{display:block;font-size:10px;color:var(--dim);margin-bottom:4px;}
+  .price-row input{padding:9px 8px;font-size:13px;border-radius:8px;}
+  .price-row input[data-f="price"]{color:var(--amber);font-weight:700;text-align:right;}
+  .price-row button{background:none;border:none;color:var(--danger);height:36px;font-size:15px;cursor:pointer;}
+  .price-addbtn{margin-top:10px;background:var(--panel-2);color:var(--cream);border:1px dashed var(--line);border-radius:8px;padding:8px;font-size:12px;width:100%;cursor:pointer;}
+
+  .radarwrap,.chartwrap{display:flex;justify-content:center;margin:8px 0;}
+
+  .legend{display:flex;gap:14px;justify-content:center;font-size:11px;color:var(--dim);margin-top:4px;}
+  .legend .sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:middle;}
+
+  .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--gold);color:#241900;font-family:'Press Start 2P',monospace;font-size:10px;padding:12px 16px;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.4);z-index:60;text-align:center;line-height:1.6;}
+</style>
+</head>
+<body>
+<div id="loading">LOADING...</div>
+<div id="app" hidden>
+  <header class="top">
+    <div class="title">大本鉄筋<span>SKILL LOG / 育成ログ</span></div>
+    <button class="bossbtn" id="bossBtn">🔒 ログイン</button>
+  </header>
+
+  <nav class="tabs">
+    <button data-tab="roster" class="active">一覧</button>
+    <button data-tab="input">記録</button>
+    <button data-tab="pcount">P数</button>
+    <button data-tab="detail">個人</button>
+    <button data-tab="team">チーム</button>
+    <button data-tab="comment">コメント</button>
+    <button data-tab="settings">設定</button>
+  </nav>
+
+  <section id="tab-roster" class="active">
+    <div class="card">
+      <h2>👷 社員一覧</h2>
+      <div id="rosterGrid" class="roster-grid"></div>
+    </div>
+    <div class="card">
+      <h2>⚔️ 職業と進化条件</h2>
+      <p style="font-size:12px;color:var(--dim);line-height:1.9;margin:0;">
+        進化判定は<b style="color:var(--cream)">1週間を終えた次の月曜日</b>。月が変わると全員Lv.1（農民）にリセットされ、先月の最終職業がバッチ（右上の■）として残ります。<br>
+        🌾 <b style="color:var(--cream)">農民 Lv.1</b> … 初期状態<br>
+        ⚔️ <b style="color:var(--cream)">兵士 Lv.2</b> … 貢献度の週平均が10ptを超える（先月＝緑バッチ）<br>
+        🔮 <b style="color:var(--cream)">魔法使い Lv.3</b> … 能力ステータスが全社平均以上（先月＝赤バッチ）<br>
+        🥋 <b style="color:var(--cream)">武闘家 Lv.4</b> … ステータスは平均未満でも貢献度の週平均20pt以上（先月＝青バッチ）<br>
+        🗡 <b style="color:var(--cream)">勇者 Lv.5</b> … ステータス2週連続で平均超え ＋ 貢献度30pt超え（先月＝金バッチ）
+      </p>
+    </div>
+  </section>
+
+  <section id="tab-input">
+    <div class="card">
+      <h2>📥 今日の記録を入力</h2>
+      <p style="font-size:12px;color:var(--dim);margin:0 0 8px;">個人の能力は社長・泉原・山﨑の3名がそれぞれ入力し、表示されるステータスはその平均値です。</p>
+      <label class="f">対象社員</label>
+      <select id="inpEmployee"></select>
+      <label class="f">記録日</label>
+      <input type="date" id="inpDate">
+      <div id="inpScores" style="margin-top:12px;"></div>
+      <label class="f">メモ（良かった判断・困ったこと）</label>
+      <textarea id="inpNote" rows="3" placeholder="例）追加工事の口頭依頼を、断る条件どおり保留にできた"></textarea>
+      <button class="btn" id="saveLogBtn">✓ この内容で保存する</button>
+    </div>
+  </section>
+
+  <section id="tab-pcount">
+    <div class="card">
+      <h2>📦 毎日のP数入力</h2>
+      <p style="font-size:12px;color:var(--dim);margin:0 0 8px;">現場を選んでP数を入れるだけで、社長が登録した単価と連動して貢献度が自動計算され、一覧のドット絵の足元にポイントとして反映されます。単価そのものは社長のみ閲覧できます。Aチームは泉原、Bチームは山﨑が入力してください。</p>
+      <label class="f">対象社員</label>
+      <select id="pcEmployee"></select>
+      <label class="f">記録日</label>
+      <input type="date" id="pcDate">
+      <div id="pcRows">
+        <label class="f">現場 1</label>
+        <select id="pcSite1" class="pcSite"></select>
+        <input type="number" id="pcP1" class="mono pcP" placeholder="P数（例）5" style="margin-top:6px;">
+        <label class="f">現場 2</label>
+        <select id="pcSite2" class="pcSite"></select>
+        <input type="number" id="pcP2" class="mono pcP" placeholder="P数" style="margin-top:6px;">
+        <label class="f">現場 3</label>
+        <select id="pcSite3" class="pcSite"></select>
+        <input type="number" id="pcP3" class="mono pcP" placeholder="P数" style="margin-top:6px;">
+        <label class="f">現場 4</label>
+        <select id="pcSite4" class="pcSite"></select>
+        <input type="number" id="pcP4" class="mono pcP" placeholder="P数" style="margin-top:6px;">
+      </div>
+      <button class="btn" id="pcSaveBtn">＋ この内容で保存する</button>
+    </div>
+    <div class="card">
+      <h2>📋 今月の実績</h2>
+      <div id="pcList"></div>
+    </div>
+  </section>
+
+  <section id="tab-detail">
+    <div id="detailBody"><div class="empty">一覧から社員をタップしてください</div></div>
+  </section>
+
+  <section id="tab-team">
+    <div class="card">
+      <h2>⚔️ チーム能力</h2>
+      <div class="radarwrap"><canvas id="teamRadar" width="280" height="260"></canvas></div>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--teamA)"></i>TEAM A</span>
+        <span><i class="sw" style="background:var(--teamB)"></i>TEAM B</span>
+      </div>
+    </div>
+    <div class="card">
+      <h2>📊 直近14日 合計XP</h2>
+      <div class="chartwrap"><canvas id="teamBars" width="300" height="180"></canvas></div>
+    </div>
+  </section>
+
+  <section id="tab-comment">
+    <div class="card">
+      <h2>📝 金曜のひとことコメント</h2>
+      <div id="commentBanner" style="font-size:12px;color:var(--dim);margin-bottom:10px;"></div>
+      <p style="font-size:11px;color:var(--dim);margin:0 0 10px;">※このコメントは記録データから自動生成された簡易コメントです（AIが会話して作るものではなく、ルールに基づいた一言です）。</p>
+      <button class="btn secondary" id="genCommentBtn">🔄 今週のコメントを更新する</button>
+    </div>
+    <div class="card">
+      <h2>💬 社員別コメント</h2>
+      <div id="commentList"></div>
+    </div>
+  </section>
+
+  <section id="tab-settings">
+    <div class="card">
+      <h2>⚙️ 社員登録</h2>
+      <div id="empEditList"></div>
+      <button class="btn secondary" id="addEmpBtn">＋ 社員を追加</button>
+    </div>
+    <div class="card">
+      <h2>🏗 単価設定（社長のみ閲覧・編集可）</h2>
+      <div id="priceEditList"></div>
+    </div>
+    <div class="card">
+      <h2>🔒 権限PIN（社長・チームリーダー）</h2>
+      <p style="font-size:12px;color:var(--dim);margin:0 0 4px;">「記録」（能力）は社長・泉原・山﨑の3名とも全社員分を入力できます。「P数」は泉原がAチーム分、山﨑がBチーム分、社長は全員分を入力できます。単価の閲覧・変更は社長のみです。</p>
+      <label class="f">👑 社長 PIN</label>
+      <input type="text" id="pinBoss" class="mono" maxlength="6" placeholder="4桁の数字">
+      <label class="f">泉原（Aチームリーダー）PIN</label>
+      <input type="text" id="pinTeamA" class="mono" maxlength="6" placeholder="4桁の数字">
+      <label class="f">山﨑（Bチームリーダー）PIN</label>
+      <input type="text" id="pinTeamB" class="mono" maxlength="6" placeholder="4桁の数字">
+      <button class="btn secondary" id="savePinBtn">PINを変更する</button>
+    </div>
+    <div class="card">
+      <h2 style="color:var(--danger)">⚠ データ</h2>
+      <p style="font-size:12px;color:var(--dim);">このアプリのデータは会社共有として保存されます（アクセスできる人は誰でも閲覧・編集できます）。</p>
+      <button class="btn danger" id="resetBtn">全データをリセット</button>
+    </div>
+  </section>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+// 既存の「大本 P数管理」アプリと同じFirebaseプロジェクトに接続します
+const firebaseConfig = {
+  apiKey: "AIzaSyBJjjHmXhtZk1uRLZcd6r8_QEoTGoR8QZQ",
+  authDomain: "tekkinnkanri.firebaseapp.com",
+  projectId: "tekkinnkanri",
+  storageBucket: "tekkinnkanri.firebasestorage.app",
+  messagingSenderId: "37454804443",
+  appId: "1:37454804443:web:ff1fc6536d5ade76b123fe"
+};
+const fbApp = initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
+
+(function(){
+"use strict";
+
+const CATS = [
+  {key:'site',    label:'現場判断'},
+  {key:'quality', label:'品質管理'},
+  {key:'staff',   label:'従業員管理'},
+  {key:'client',  label:'取引先対応'},
+  {key:'delivery',label:'納期管理'},
+  {key:'finance', label:'タイワイヤ管理'}
+];
+const SEED_EMPLOYEES = [
+  {id:'izumihara',name:'泉原',team:'A'},{id:'kido',name:'城戸',team:'A'},{id:'tsuzuki',name:'都築',team:'A'},
+  {id:'sugihara',name:'杉原',team:'A'},{id:'nishizaki',name:'西崎',team:'A'},
+  {id:'yamazaki',name:'山﨑',team:'B'},{id:'masato',name:'雅人',team:'B'},{id:'ohmotos',name:'大本汐',team:'B'},{id:'miyakoda',name:'都田',team:'B'},
+  {id:'okamoto',name:'岡本',team:'P',partTime:true},
+  {id:'oyama',name:'尾山',team:'P',partTime:true},
+  {id:'ito',name:'伊藤',team:'P',partTime:true},
+  {id:'tanimoto',name:'谷本',team:'P',partTime:true},
+  {id:'inoue',name:'井上',team:'P',partTime:true}
+];
+
+let employees = [];
+let settings = {pins:{boss:'0000', teamA:'1111', teamB:'2222'}};
+let logsByMonth = {}; // 'YYYY-MM' -> array of ability-score entries
+let priceSettings = {}; // { employeeName: [{id, site, category, price}] }
+let pdaily = {}; // 'YYYY-MM' -> array of {id, employeeName, date, site, category, price, p, amount}
+let currentDetailId = null;
+let currentRole = null; // 'boss' | 'teamA' | 'teamB' | null
+let pendingScores = {};
+
+const ROLE_LABEL = {boss:'👑 社長', teamA:'泉原（Aチーム）', teamB:'山﨑（Bチーム）'};
+const ROLE_TEAM = {boss:null, teamA:'A', teamB:'B'};
+// 単価設定・日次P数は Firestore（config/setup, pdata）から読み込むため、
+// アプリ内にダミーの初期値は持たない。
+
+const $ = (s,el)=> (el||document).querySelector(s);
+const $$ = (s,el)=> Array.from((el||document).querySelectorAll(s));
+const todayStr = ()=> new Date().toISOString().slice(0,10);
+const monthOf = (d)=> d.slice(0,7);
+const uid = ()=> 'x'+Math.random().toString(36).slice(2,10);
+
+function empIdByName(name){ const e = employees.find(x=>x.name===name); return e ? e.id : null; }
+function empNameById(id){ const e = employees.find(x=>x.id===id); return e ? e.name : id; }
+
+// 「大本 P数管理」アプリと同じFirestoreプロジェクトを使用。
+// priceSettings ⇔ config/setup ドキュメント、pdaily ⇔ pdata コレクションは、
+// 既存アプリと完全に同じ場所を読み書きするので、単価・P数データは両アプリで共有されます。
+// それ以外（社員一覧・能力評価ログ・PIN設定）は新しく 'skilllog' コレクションに保存します。
+async function storeGet(key){
+  try{
+    if(key==='priceSettings'){
+      const snap = await getDoc(doc(db,'config','setup'));
+      if(!snap.exists()) return null;
+      const raw = snap.data();
+      const out = {};
+      Object.keys(raw).forEach(id=>{
+        const name = empNameById(id);
+        out[name] = (raw[id]||[]).map(r=> ({id:uid(), site:r.site||'', category:r.category||'', price:Number(r.unitPrice)||0}));
+      });
+      return out;
+    }
+    const snap = await getDoc(doc(db,'skilllog',key.replace(/:/g,'_')));
+    return snap.exists() ? snap.data().value : null;
+  }catch(e){ console.error('storeGet failed', key, e); return null; }
+}
+async function storeSet(key, val){
+  try{
+    if(key==='priceSettings'){
+      const raw = {};
+      Object.keys(val).forEach(name=>{
+        const id = empIdByName(name);
+        if(!id) return; // パート従業員など対象外
+        raw[id] = (val[name]||[]).map(r=> ({site:r.site||'', category:r.category||'', unitPrice:Number(r.price)||0}));
+      });
+      await setDoc(doc(db,'config','setup'), raw);
+      return true;
+    }
+    await setDoc(doc(db,'skilllog',key.replace(/:/g,'_')), {value: val});
+    return true;
+  }catch(e){ console.error('storeSet failed', key, e); return false; }
+}
+// P数の日次データは pdata/{date} ドキュメントに { empId: [{site,category,p,amount}] } の形で書き込む
+// （既存アプリの window.saveDay と全く同じ構造）。読み込みは onSnapshot でリアルタイム同期する。
+async function writePdataDay(date, empId, rows){
+  try{ await setDoc(doc(db,'pdata',date), {[empId]: rows}, {merge:true}); return true; }
+  catch(e){ console.error('writePdataDay failed', e); return false; }
+}
+function rebuildPdailyFromSnapshot(snapshot){
+  const next = {};
+  snapshot.forEach(d=>{
+    const date = d.id;
+    const mk = monthOf(date);
+    const data = d.data();
+    Object.keys(data).forEach(empId=>{
+      const name = empNameById(empId);
+      (data[empId]||[]).forEach(row=>{
+        if(!next[mk]) next[mk] = [];
+        next[mk].push({
+          id: date+'_'+empId+'_'+row.site,
+          employeeName: name, date,
+          site: row.site||'', category: row.category||'',
+          price: row.p ? Math.round((row.amount||0)/row.p) : 0,
+          p: row.p||0, amount: row.amount||0
+        });
+      });
+    });
+  });
+  pdaily = next;
+}
+
+function hashStr(s){
+  let h = 2166136261;
+  for(let i=0;i<s.length;i++){ h ^= s.charCodeAt(i); h = Math.imul(h,16777619); }
+  return h>>>0;
+}
+function mulberry32(a){
+  return function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// ---------- 職業（月次ジョブ）システム ----------
+// 農民→兵士→魔法使い→武闘家→勇者。判定は「1週間終えた次の月曜日」＝完了した週のデータのみで行う。
+// 月が変わるとLv1（農民）にリセット。先月の最終職業はバッチとしてドット絵に残る。
+const JOBS = ['','農民','兵士','魔法使い','武闘家','勇者'];
+const BADGE_COLOR = {'勇者':'#ffd166','武闘家':'#4d8fd6','魔法使い':'#e2564f','兵士':'#7ec850'};
+
+function dateStrAdd(ds, n){ const d = new Date(ds+'T00:00:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
+function mondayOf(ds){ const d = new Date(ds+'T00:00:00'); const off = (d.getDay()+6)%7; d.setDate(d.getDate()-off); return d.toISOString().slice(0,10); }
+
+// その日の貢献度pt（全体を100とした比率）
+function dailyPt(name, ds){
+  const mk = monthOf(ds);
+  const rows = (pdaily[mk]||[]).filter(e=>e.date===ds);
+  if(!rows.length) return null;
+  const total = rows.reduce((s,e)=>s+e.amount,0);
+  if(!total) return null;
+  const mine = rows.filter(e=>e.employeeName===name).reduce((s,e)=>s+e.amount,0);
+  return (mine/total)*100;
+}
+// 週（月曜開始）の貢献度平均
+function weeklyPt(name, weekStart){
+  const vals = [];
+  for(let i=0;i<7;i++){
+    const v = dailyPt(name, dateStrAdd(weekStart,i));
+    if(v!==null) vals.push(v);
+  }
+  return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
+}
+// 週内のステータス（能力スコア）平均が全社平均以上か
+function weeklyStatusHigh(empId, weekStart){
+  const weekEnd = dateStrAdd(weekStart,6);
+  const inWeek = (l)=> l.date>=weekStart && l.date<=weekEnd;
+  const avgOf = (id)=>{
+    const vals = [];
+    allLogsFlat().filter(l=>l.employeeId===id && inWeek(l)).forEach(l=>{
+      CATS.forEach(c=>{ const v=l.scores[c.key]; if(v>0) vals.push(v); });
+    });
+    return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
+  };
+  const mine = avgOf(empId);
+  if(mine===null) return false;
+  const others = employees.map(e=>avgOf(e.id)).filter(v=>v!==null);
+  if(!others.length) return false;
+  const companyAvg = others.reduce((a,b)=>a+b,0)/others.length;
+  return mine >= companyAvg;
+}
+// 指定月のうち「完了した週」（日曜終了がasOfより前 かつ 月内）のリスト
+function completedWeeks(monthKey, asOf){
+  const first = monthKey+'-01';
+  let ws = mondayOf(first);
+  const out = [];
+  for(let i=0;i<6;i++){
+    const we = dateStrAdd(ws,6);
+    if(monthOf(we)===monthKey && we < asOf) out.push(ws);
+    ws = dateStrAdd(ws,7);
+    if(ws > asOf) break;
+  }
+  return out;
+}
+// 職業判定
+function jobForMonth(emp, monthKey, asOf){
+  const weeks = completedWeeks(monthKey, asOf);
+  if(!weeks.length) return {lv:1, job:'農民'};
+  const lastW = weeks[weeks.length-1];
+  const pt = weeklyPt(emp.name, lastW) ?? 0;
+  const sHigh = weeklyStatusHigh(emp.id, lastW);
+  const sHighPrev = weeks.length>=2 ? weeklyStatusHigh(emp.id, weeks[weeks.length-2]) : false;
+  if(sHigh && sHighPrev && pt>30) return {lv:5, job:'勇者'};
+  if(!sHigh && pt>=20) return {lv:4, job:'武闘家'};
+  if(sHigh) return {lv:3, job:'魔法使い'};
+  if(pt>10) return {lv:2, job:'兵士'};
+  return {lv:1, job:'農民'};
+}
+function currentJob(emp){
+  const today = todayStr();
+  return jobForMonth(emp, today.slice(0,7), today);
+}
+// 先月の最終職業（バッチ）
+function badgeFor(emp){
+  const today = todayStr();
+  const d = new Date(today+'T00:00:00'); d.setDate(1);
+  const firstOfMonth = d.toISOString().slice(0,10);
+  d.setMonth(d.getMonth()-1);
+  const prevMonth = d.toISOString().slice(0,7);
+  const j = jobForMonth(emp, prevMonth, firstOfMonth);
+  return j.job!=='農民' ? j.job : null;
+}
+
+// ---------- 金曜のひとことコメント（ルールベースの自動生成・LLM呼び出しではない） ----------
+function isFriday(ds){ return new Date(ds+'T00:00:00').getDay()===5; }
+function generateComment(emp){
+  const jb = currentJob(emp);
+  const cats = categoryAverages(emp.id, 7);
+  let best=null, worst=null;
+  CATS.forEach(c=>{
+    const v = cats[c.key];
+    if(v>0){
+      if(!best || v>cats[best.key]) best=c;
+      if(!worst || v<cats[worst.key]) worst=c;
+    }
+  });
+  const thisWeek = mondayOf(todayStr());
+  const lastWeek = dateStrAdd(thisWeek,-7);
+  const ptThis = weeklyPt(emp.name, thisWeek);
+  const ptLast = weeklyPt(emp.name, lastWeek);
+  let trend = null;
+  if(ptThis!=null && ptLast!=null){
+    if(ptThis > ptLast+1) trend='上向き';
+    else if(ptThis < ptLast-1) trend='やや下降';
+    else trend='横ばい';
+  }
+
+  const parts = [];
+  const JOB_LINE = {
+    '勇者':   `${emp.name}さんは今週も勇者クラス。安定した強さが際立っています`,
+    '武闘家': `${emp.name}さんは貢献度で武闘家クラスに到達。数字でしっかり結果を出しています`,
+    '魔法使い': `${emp.name}さんは能力評価で魔法使いクラス。丁寧な仕事ぶりが評価に表れています`,
+    '兵士':   `${emp.name}さんは兵士クラス。着実にペースをつかめています`,
+    '農民':   `${emp.name}さんは今週まだ農民クラス。次の一歩を後押ししたいところです`
+  };
+  parts.push(JOB_LINE[jb.job] || `${emp.name}さんは今週も一つずつ積み上げています`);
+  if(best) parts.push(`${best.label}が強み`);
+  if(worst && worst.key!==(best&&best.key)) parts.push(`${worst.label}は伸びしろ`);
+  if(trend) parts.push(`貢献度は${trend}`);
+  return parts.join('。') + '。';
+}
+function renderComments(){
+  const today = todayStr();
+  const banner = $('#commentBanner');
+  banner.textContent = isFriday(today)
+    ? '🎉 本日は金曜日です。今週のコメントを確認しましょう。'
+    : '次回は金曜日に更新される想定です。今すぐ内容を見ることもできます。';
+  const list = $('#commentList');
+  list.innerHTML = employees.map(emp=>`
+    <div class="log-item">
+      <div class="d">${escapeHtml(emp.name)}${emp.partTime? '（パート）':''}</div>
+      <div class="tags">${escapeHtml(generateComment(emp))}</div>
+    </div>`).join('') || '<div class="empty">社員未登録</div>';
+}
+
+function allLogsFlat(){
+  let out=[];
+  Object.values(logsByMonth).forEach(arr=>{ if(arr) out = out.concat(arr); });
+  return out;
+}
+function logsForEmployee(id){ return allLogsFlat().filter(l=>l.employeeId===id); }
+function xpOfEntry(entry){ return CATS.reduce((s,c)=> s + (entry.scores[c.key]||0), 0); }
+function totalXP(id){ return logsForEmployee(id).reduce((s,l)=> s+xpOfEntry(l), 0); }
+
+function categoryAverages(id, days){
+  const logs = logsForEmployee(id);
+  const cutoff = days ? Date.now() - days*86400000 : -Infinity;
+  const filtered = logs.filter(l=> new Date(l.date).getTime() >= cutoff);
+  const src = filtered.length ? filtered : logs;
+  const out = {};
+  CATS.forEach(c=>{
+    // 評価者（社長・泉原・山﨑）ごとに平均を取り、その平均値を表示値とする
+    const byRater = {};
+    src.forEach(l=>{
+      const v = l.scores[c.key];
+      if(v>0){
+        const r = l.rater || 'unknown';
+        if(!byRater[r]) byRater[r] = [];
+        byRater[r].push(v);
+      }
+    });
+    const raterAvgs = Object.values(byRater).map(vals=> vals.reduce((a,b)=>a+b,0)/vals.length);
+    out[c.key] = raterAvgs.length ? raterAvgs.reduce((a,b)=>a+b,0)/raterAvgs.length : 0;
+  });
+  return out;
+}
+
+// ---------- 単価設定 ----------
+function sitesFor(name){ return priceSettings[name] || []; }
+
+// ---------- 日次P数・貢献額 ----------
+function allPdailyFlat(){
+  let out=[];
+  Object.values(pdaily).forEach(arr=>{ if(arr) out = out.concat(arr); });
+  return out;
+}
+function pdailyForEmployee(name){ return allPdailyFlat().filter(e=>e.employeeName===name); }
+function monthlyAmount(name, month){
+  return (pdaily[month]||[]).filter(e=>e.employeeName===name).reduce((s,e)=>s+e.amount,0);
+}
+function latestPdailyMonth(){
+  const months = Object.keys(pdaily).filter(m=> (pdaily[m]||[]).length>0);
+  if(!months.length) return null;
+  return months.sort().pop();
+}
+function ratioFor(name){
+  const cur = todayStr().slice(0,7);
+  let m = (pdaily[cur] && pdaily[cur].length) ? cur : latestPdailyMonth();
+  if(!m) return null;
+  const allNames = employees.map(e=>e.name);
+  const total = allNames.reduce((s,n)=> s + monthlyAmount(n, m), 0);
+  if(!total) return null;
+  const mine = monthlyAmount(name, m);
+  return Math.round((mine/total)*1000)/10;
+}
+function renderPcountSettings(){
+  const empSel = $('#pcEmployee');
+  const team = ROLE_TEAM[currentRole];
+  let visible = employees.filter(e=>!e.partTime);
+  if(team) visible = visible.filter(e=>e.team===team);
+  empSel.innerHTML = visible.map(e=>`<option value="${escapeHtml(e.name)}">${escapeHtml(e.name)}（${e.team}）</option>`).join('') || '<option>対象社員なし</option>';
+  updateSiteOptions();
+  if(!$('#pcDate').value) $('#pcDate').value = todayStr();
+
+  const cur = todayStr().slice(0,7);
+  const rows = (pdaily[cur]||[]).slice().sort((a,b)=> b.date.localeCompare(a.date));
+  const list = $('#pcList');
+  const showPrice = currentRole==='boss';
+  list.innerHTML = rows.length ? rows.map(r=>`
+    <div class="log-item">
+      <div class="d">${r.date}</div>
+      <div class="tags">${escapeHtml(r.employeeName)}　${escapeHtml(r.site)}/${escapeHtml(r.category)}　${r.p}P${showPrice? ' × ¥'+r.price+'/P ＝ ¥'+r.amount.toLocaleString() : ''}</div>
+    </div>`).join('') : '<div class="empty">今月の実績がまだありません</div>';
+}
+function updateSiteOptions(){
+  const name = $('#pcEmployee').value;
+  const sites = sitesFor(name);
+  const showPrice = currentRole==='boss';
+  const opts = '<option value="">－（未使用）</option>' + sites.map(s=> `<option value="${s.id}">${escapeHtml(s.site)} / ${escapeHtml(s.category)}${showPrice? '（¥'+s.price+'/P）':''}</option>`).join('');
+  $$('.pcSite').forEach((sel,i)=>{
+    sel.innerHTML = sites.length ? opts : '<option value="">社長が現場・単価を未設定です</option>';
+    // 現場1には最初の現場をデフォルト選択
+    if(sites.length && i===0) sel.value = sites[0].id;
+  });
+}
+async function savePdaily(){
+  const name = $('#pcEmployee').value;
+  const date = $('#pcDate').value || todayStr();
+  if(!name){ alert('社員を選択してください'); return; }
+  const team = ROLE_TEAM[currentRole];
+  const emp = employees.find(e=>e.name===name);
+  if(team && emp && emp.team!==team){ alert('自分のチームの社員のみ入力できます'); return; }
+
+  const rows = [];
+  for(let i=1;i<=4;i++){
+    const siteId = $('#pcSite'+i).value;
+    const p = Number($('#pcP'+i).value);
+    if(!siteId || !p) continue;
+    const site = sitesFor(name).find(s=>s.id===siteId);
+    if(site) rows.push({site, p});
+  }
+  if(!rows.length){ alert('現場とP数を1組以上入力してください（現場が未設定の場合は社長に単価設定を依頼してください）'); return; }
+
+  const empId = empIdByName(name);
+  let totalAmount = 0;
+  const fsRows = rows.map(r=>{
+    const amount = r.p * r.site.price;
+    totalAmount += amount;
+    return {site:r.site.site, category:r.site.category, p:r.p, amount};
+  });
+  const ok = await writePdataDay(date, empId, fsRows);
+  if(!ok){ alert('保存に失敗しました。通信状況を確認してください。'); return; }
+  for(let i=1;i<=4;i++){ $('#pcP'+i).value=''; }
+  showToast(currentRole==='boss' ? '保存しました（貢献額 ¥'+totalAmount.toLocaleString()+'）' : '保存しました（'+rows.length+'件）');
+  // pdata の反映は onSnapshot 経由でほぼ即時に自動反映されます
+}
+
+// ---------- 単価設定（社長のみ）UI ----------
+function renderPriceSettings(){
+  const box = $('#priceEditList');
+  if(currentRole!=='boss'){
+    box.innerHTML = '<div class="empty">🔒 単価は社長のみ閲覧できます。<br>右上のログインから社長PINを入力してください。</div>';
+    return;
+  }
+  box.innerHTML = employees.filter(e=>!e.partTime).map(emp=>{
+    const rows = sitesFor(emp.name);
+    return `<div class="price-block" data-emp="${escapeHtml(emp.name)}">
+      <div class="pb-name"><span class="dot" style="background:${teamColor(emp.team)}"></span>${escapeHtml(emp.name)}</div>
+      <div class="price-rows">
+        ${rows.map((r,i)=>`
+          <div class="price-row" data-id="${r.id}">
+            <div class="pfield"><label>現場名 ${i+1}</label><input type="text" value="${escapeHtml(r.site)}" data-f="site" placeholder="現場名"></div>
+            <div class="pfield"><label>製品カテゴリ</label><input type="text" value="${escapeHtml(r.category)}" data-f="category" placeholder="カテゴリ"></div>
+            <div class="pfield"><label>単価(円/P)</label><input type="number" value="${r.price}" data-f="price" class="mono"></div>
+            <button data-action="del">✕</button>
+          </div>`).join('')}
+      </div>
+      <button class="price-addbtn" data-action="add">＋ 現場を追加</button>
+    </div>`;
+  }).join('') || '<div class="empty">社員未登録</div>';
+
+  $$('.price-block', box).forEach(block=>{
+    const empName = block.dataset.emp;
+    block.querySelectorAll('.price-row').forEach(row=>{
+      const id = row.dataset.id;
+      row.querySelectorAll('input').forEach(inp=>{
+        inp.addEventListener('change', ()=> requireRole(['boss'], async ()=>{
+          const rec = sitesFor(empName).find(s=>s.id===id);
+          if(!rec) return;
+          const f = inp.dataset.f;
+          rec[f] = f==='price' ? Number(inp.value)||0 : inp.value;
+          await storeSet('priceSettings', priceSettings);
+          renderPcountSettings();
+        }));
+      });
+      row.querySelector('[data-action="del"]').addEventListener('click', ()=> requireRole(['boss'], async ()=>{
+        priceSettings[empName] = sitesFor(empName).filter(s=>s.id!==id);
+        await storeSet('priceSettings', priceSettings);
+        renderPriceSettings(); renderPcountSettings();
+      }));
+    });
+    block.querySelector('[data-action="add"]').addEventListener('click', ()=> requireRole(['boss'], async ()=>{
+      if(!priceSettings[empName]) priceSettings[empName] = [];
+      priceSettings[empName].push({id:uid(), site:'現場名', category:'', price:0});
+      await storeSet('priceSettings', priceSettings);
+      renderPriceSettings(); renderPcountSettings();
+    }));
+  });
+}
+
+// ---------- pixel avatar ----------
+function drawAvatar(canvas, name, team, job, badge, scale){
+  scale = scale || 6;
+  const ctx = canvas.getContext('2d');
+  const W=9,H=12;
+  canvas.width = W*scale; canvas.height = H*scale;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  const half = [
+    [0,0,1,1,1],
+    [0,1,1,1,1],
+    [0,1,1,1,1],
+    [0,1,1,1,1],
+    [1,1,1,1,1],
+    [1,1,1,1,1],
+    [1,1,1,1,1],
+    [1,1,1,1,1],
+    [0,1,1,1,0],
+    [0,1,1,1,0],
+    [0,1,1,1,0],
+    [0,1,0,1,0]
+  ];
+  const rowRegion = ['hat','hair','face','face','body','body','body','body','legs','legs','legs','legs'];
+
+  const rnd = mulberry32(hashStr(name));
+  const SKIN  = ['#e8b98c','#dba977','#c88a5e','#f0c9a0','#d9a06b','#c79a70'];
+  const HAIR  = ['#2b2320','#4a2f1c','#171412','#5c4030','#3a2a1a','#6b4a2c'];
+  let skin = SKIN[Math.floor(rnd()*SKIN.length)];
+  let hair = HAIR[Math.floor(rnd()*HAIR.length)];
+
+  // パート従業員は職業コスチュームより先に、個人の外見的特徴を優先する
+  const PART_TIME = {
+    '岡本': {skin:'#a9714f', hair:'#1c1c1c', wide:true},
+    '尾山': {skin:'#e8c9a0', hair:'#c7c7c7', gap:true},
+    '伊藤': {skin:'#f0c9a0', hair:'#f0d34a', longHair:true, skirt:'#e85f9c'},
+    '谷本': {skin:'#f0c9a0', hair:'#241a12', bob:true, skirt:'#f0d34a'},
+    '井上': {skin:'#c88a5e', hair:'#0d0d0d', allBlack:true}
+  };
+  const pt = PART_TIME[name];
+  if(pt){ skin = pt.skin; hair = pt.hair; }
+
+  // 職業ごとの装い
+  const STYLE = {
+    '農民':     {hat:'#c9a86a', body:'#8a7a5a', legs:'#5c4a34'},
+    '兵士':     {hat:'#9aa4b5', body:'#6b7688', legs:'#3a3f4c'},
+    '魔法使い': {hat:'#7a5a8c', body:'#5c4a7a', legs:'#453a5c'},
+    '武闘家':   {hat:'#c0392b', body:'#d8d3c2', legs:'#8c3030'},
+    '勇者':     {hat:'#ffd166', body:'#3f7a72', legs:'#2e4a5c'}
+  };
+  const st = STYLE[job] || STYLE['農民'];
+  const legsColor = (pt && pt.skirt) ? pt.skirt : (pt && pt.allBlack) ? '#111111' : st.legs;
+  const hatColor  = (pt && pt.allBlack) ? '#111111' : st.hat;
+  const bodyColor = (pt && pt.allBlack) ? '#181818' : st.body;
+
+  const colorFor = (region)=>{
+    if(region==='hat') return hatColor;
+    if(region==='hair') return (job==='魔法使い' && !(pt&&pt.allBlack)) ? st.hat : hair;
+    if(region==='face') return skin;
+    if(region==='body') return bodyColor;
+    return legsColor;
+  };
+
+  // subtle per-pixel shade variance for texture
+  for(let r=0;r<H;r++){
+    for(let c=0;c<5;c++){
+      if(!half[r][c]) continue;
+      let base = colorFor(rowRegion[r]);
+      const jitter = rnd() < 0.15;
+      const px = (x)=>{ ctx.fillStyle = jitter ? shade(base,-14) : base; ctx.fillRect(x*scale, r*scale, scale, scale); };
+      px(c);
+      const mirrored = W-1-c;
+      if(mirrored!==c) px(mirrored);
+    }
+  }
+
+  // パート従業員の個別の特徴付け
+  if(pt && pt.wide){
+    // 岡本：大柄で筋肉質 → 肩・腕を一段広く、力こぶのハイライトを追加
+    ctx.fillStyle = st.body;
+    ctx.fillRect(-0.5*scale, 4*scale, scale, scale*2);
+    ctx.fillRect(8.5*scale, 4*scale, scale, scale*2);
+    ctx.fillStyle = shade(skin, 18);
+    ctx.fillRect(-0.3*scale, 4.3*scale, scale*0.6, scale*0.6);
+    ctx.fillRect(8.7*scale, 4.3*scale, scale*0.6, scale*0.6);
+  }
+  if(pt && pt.longHair){
+    // 伊藤：長い髪が肩の外側まで垂れる
+    ctx.fillStyle = hair;
+    ctx.fillRect(0, 2*scale, scale*0.8, scale*4.5);
+    ctx.fillRect(8.2*scale, 2*scale, scale*0.8, scale*4.5);
+  }
+  if(pt && pt.bob){
+    // 谷本：ボブヘアで耳まで覆う
+    ctx.fillStyle = hair;
+    ctx.fillRect(0, 2*scale, scale, scale*1.3);
+    ctx.fillRect(8*scale, 2*scale, scale, scale*1.3);
+  }
+
+  // eyes
+  ctx.fillStyle = '#241a12';
+  ctx.fillRect(3*scale, 3*scale, scale*0.8, scale*0.8);
+  ctx.fillRect(5*scale, 3*scale, scale*0.8, scale*0.8);
+
+  if(pt && pt.gap){
+    // 尾山：歯が一本ないニッコリ口元
+    ctx.fillStyle = shade(skin,-20);
+    ctx.fillRect(3.3*scale, 4.1*scale, scale*2.4, scale*0.5);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(3.5*scale, 4.15*scale, scale*0.5, scale*0.4);
+    ctx.fillRect(4.9*scale, 4.15*scale, scale*0.5, scale*0.4);
+    // 中央の歯が抜けている
+  }
+
+  // 職業ごとの小物
+  if(job==='農民'){
+    ctx.fillStyle = '#8a6a3a';
+    ctx.fillRect(0.4*scale, 5*scale, scale*0.6, scale*3);
+  }
+  if(job==='兵士'){
+    ctx.fillStyle = '#c9ccd4';
+    ctx.fillRect(0.4*scale, 2.4*scale, scale*0.6, scale*0.9);
+    ctx.fillStyle = '#8a6a3a';
+    ctx.fillRect(0.4*scale, 3.3*scale, scale*0.6, scale*4.5);
+  }
+  if(job==='魔法使い'){
+    ctx.fillStyle = '#8a6a3a';
+    ctx.fillRect(0.4*scale, 3.6*scale, scale*0.6, scale*4.4);
+    ctx.fillStyle = '#c48af0';
+    ctx.fillRect(0.2*scale, 2.8*scale, scale, scale*0.9);
+  }
+  if(job==='武闘家'){
+    ctx.fillStyle = skin;
+    ctx.fillRect(0.2*scale, 5.4*scale, scale*0.8, scale*0.8);
+    ctx.fillRect((W-1)*scale+scale*0.1, 5.4*scale, scale*0.8, scale*0.8);
+  }
+  if(job==='勇者'){
+    ctx.fillStyle = '#e8ecf4';
+    ctx.fillRect(0.4*scale, 2.2*scale, scale*0.6, scale*3.2);
+    ctx.fillStyle = '#e0a53f';
+    ctx.fillRect(0, 5.4*scale, scale*1.4, scale*0.6);
+    ctx.strokeStyle = '#ffd166';
+    ctx.lineWidth = Math.max(1, scale*0.18);
+    ctx.strokeRect(0.5, 0.5, canvas.width-1, canvas.height-1);
+  }
+
+  // 先月のバッチ（右上）
+  if(badge && BADGE_COLOR[badge]){
+    const b = scale*1.6;
+    ctx.fillStyle = BADGE_COLOR[badge];
+    ctx.fillRect(canvas.width-b-1, 1, b, b);
+    ctx.strokeStyle = '#171b24';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(canvas.width-b-1, 1, b, b);
+  }
+}
+function shade(hex, amt){
+  const c = hex.replace('#','');
+  const num = parseInt(c,16);
+  let r=(num>>16)+amt, g=((num>>8)&0xff)+amt, b=(num&0xff)+amt;
+  r=Math.max(0,Math.min(255,r)); g=Math.max(0,Math.min(255,g)); b=Math.max(0,Math.min(255,b));
+  return '#'+(1<<24 | r<<16 | g<<8 | b).toString(16).slice(1);
+}
+
+// ---------- radar chart ----------
+function drawRadar(canvas, seriesList, maxVal){
+  const ctx = canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  const cx=W/2, cy=H/2-6, R=Math.min(W,H)/2-34;
+  const n = CATS.length;
+  const angle = (i)=> -Math.PI/2 + i*(2*Math.PI/n);
+
+  // rings
+  ctx.strokeStyle = '#3a4356';
+  ctx.fillStyle = '#8b93a7';
+  ctx.font = '10px "Zen Kaku Gothic New"';
+  for(let ring=1;ring<=4;ring++){
+    ctx.beginPath();
+    for(let i=0;i<=n;i++){
+      const a=angle(i%n); const r=R*ring/4;
+      const x=cx+r*Math.cos(a), y=cy+r*Math.sin(a);
+      i===0? ctx.moveTo(x,y): ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+  }
+  // axes + labels
+  for(let i=0;i<n;i++){
+    const a=angle(i);
+    const x=cx+R*Math.cos(a), y=cy+R*Math.sin(a);
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(x,y); ctx.stroke();
+    const lx = cx+(R+22)*Math.cos(a), ly = cy+(R+16)*Math.sin(a);
+    ctx.textAlign = Math.cos(a) > 0.3 ? 'left' : Math.cos(a) < -0.3 ? 'right' : 'center';
+    ctx.fillText(CATS[i].label, lx, ly);
+  }
+  // series
+  seriesList.forEach(s=>{
+    ctx.beginPath();
+    for(let i=0;i<=n;i++){
+      const idx=i%n;
+      const a=angle(idx);
+      const v = Math.min(1, (s.values[idx]||0)/maxVal);
+      const r = R*v;
+      const x=cx+r*Math.cos(a), y=cy+r*Math.sin(a);
+      i===0? ctx.moveTo(x,y): ctx.lineTo(x,y);
+    }
+    ctx.closePath();
+    ctx.fillStyle = s.color+'33';
+    ctx.strokeStyle = s.color;
+    ctx.lineWidth = 2;
+    ctx.fill(); ctx.stroke();
+  });
+}
+
+function drawBars(canvas, labels, values, color){
+  const ctx = canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  const max = Math.max(1, ...values);
+  const pad=24, bw = (W-pad*2)/values.length;
+  ctx.strokeStyle='#3a4356'; ctx.beginPath(); ctx.moveTo(pad,H-20); ctx.lineTo(W-6,H-20); ctx.stroke();
+  values.forEach((v,i)=>{
+    const h = (H-40) * (v/max);
+    const x = pad + i*bw + bw*0.2;
+    ctx.fillStyle = color;
+    ctx.fillRect(x, H-20-h, bw*0.6, h);
+  });
+  ctx.fillStyle='#8b93a7'; ctx.font='9px "JetBrains Mono"'; ctx.textAlign='center';
+  labels.forEach((l,i)=>{
+    if(i% Math.ceil(labels.length/7) === 0){
+      ctx.fillText(l, pad + i*bw + bw*0.5, H-8);
+    }
+  });
+}
+
+// ---------- rendering ----------
+function renderRoster(){
+  const grid = $('#rosterGrid');
+  grid.innerHTML='';
+  if(!employees.length){ grid.innerHTML = '<div class="empty">設定タブから社員を登録してください</div>'; return; }
+  employees.forEach(emp=>{
+    const jb = currentJob(emp);
+    const badge = badgeFor(emp);
+    const ratio = ratioFor(emp.name);
+    const pct = Math.min(100, Math.round(((ratio||0)/30)*100)); // 30pt=勇者ラインを満タンとする
+    const div = document.createElement('div');
+    div.className = 'emp-card';
+    div.innerHTML = `
+      <div class="team-dot" style="background:${teamColor(emp.team)}"></div>
+      <canvas></canvas>
+      <div class="ratio-badge">${ratio!=null ? ratio+'pt' : '－'}</div>
+      <div class="nm">${escapeHtml(emp.name)}</div>
+      <div class="lv">Lv.${jb.lv} ${jb.job}${badge? '　🎖':''}</div>
+      <div class="xpbar"><i style="width:${pct}%"></i></div>
+    `;
+    drawAvatar(div.querySelector('canvas'), emp.name, emp.team, jb.job, badge, 5);
+    div.addEventListener('click', ()=>{ currentDetailId = emp.id; switchTab('detail'); renderDetail(); });
+    grid.appendChild(div);
+  });
+}
+
+function renderInputTab(){
+  const sel = $('#inpEmployee');
+  sel.innerHTML = employees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}（${e.team}）</option>`).join('') || '<option>社員未登録</option>';
+  if(!$('#inpDate').value) $('#inpDate').value = todayStr();
+  pendingScores = {};
+  const box = $('#inpScores');
+  box.innerHTML = CATS.map(c=>`
+    <div class="score-row" data-cat="${c.key}">
+      <div class="lbl">${c.label}</div>
+      <div class="stars">
+        ${[0,1,2,3].map(v=>`<button data-v="${v}">${v===0?'－':v}</button>`).join('')}
+      </div>
+    </div>
+  `).join('');
+  $$('.score-row', box).forEach(row=>{
+    const cat = row.dataset.cat;
+    pendingScores[cat]=0;
+    $$('button', row).forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        pendingScores[cat] = Number(btn.dataset.v);
+        $$('button', row).forEach(b=>b.classList.toggle('sel', b===btn));
+      });
+    });
+    row.querySelector('button[data-v="0"]').classList.add('sel');
+  });
+}
+
+async function saveLog(){
+  const empId = $('#inpEmployee').value;
+  const date = $('#inpDate').value || todayStr();
+  const note = $('#inpNote').value.trim();
+  if(!empId){ alert('社員を選択してください'); return; }
+  const entry = { id: uid(), employeeId: empId, date, rater: currentRole, scores: {...pendingScores}, note };
+  const mk = monthOf(date);
+  if(!logsByMonth[mk]) logsByMonth[mk] = [];
+  logsByMonth[mk].push(entry);
+  await storeSet('logs:'+mk, logsByMonth[mk]);
+  $('#inpNote').value='';
+  renderInputTab();
+  renderRoster();
+  if(currentDetailId===empId) renderDetail();
+  showToast('記録を保存しました');
+}
+
+function showToast(msg){
+  const t = document.createElement('div');
+  t.className='toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=> t.remove(), 2200);
+}
+
+function renderDetail(){
+  const body = $('#detailBody');
+  if(!currentDetailId){ body.innerHTML = '<div class="empty">一覧から社員をタップしてください</div>'; return; }
+  const emp = employees.find(e=>e.id===currentDetailId);
+  if(!emp){ body.innerHTML = '<div class="empty">社員が見つかりません</div>'; return; }
+  const jb = currentJob(emp);
+  const badge = badgeFor(emp);
+  const logs = logsForEmployee(emp.id).slice().sort((a,b)=> b.date.localeCompare(a.date));
+
+  body.innerHTML = `
+    <button class="backbtn" id="backToRoster">← 一覧へ戻る</button>
+    <div class="card">
+      <div class="detail-head">
+        <canvas id="detCanvas"></canvas>
+        <div class="meta">
+          <div class="nm">${escapeHtml(emp.name)}</div>
+          <div class="lv">Lv.${jb.lv} ${jb.job}</div>
+          <div class="team">TEAM ${emp.team}${badge? '　先月: '+badge+'バッチ🎖' : ''}</div>
+          <div class="ratio-badge">${(()=>{const r=ratioFor(emp.name); return r!=null? '貢献度 '+r+'pt' : '貢献度 －';})()}</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>📈 能力バランス（直近30日）</h2>
+      <div class="radarwrap"><canvas id="detRadar" width="280" height="260"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>📊 直近14日 日次XP</h2>
+      <div class="chartwrap"><canvas id="detBars" width="300" height="160"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>📦 P数・売上実績（参考）</h2>
+      <div id="detPcount">${pcountHtml(emp.name)}</div>
+    </div>
+    <div class="card">
+      <h2>📝 記録履歴</h2>
+      <div id="detLogs">${logs.length? logs.slice(0,20).map(logHtml).join('') : '<div class="empty">まだ記録がありません</div>'}</div>
+    </div>
+  `;
+  drawAvatar($('#detCanvas'), emp.name, emp.team, jb.job, badge, 9);
+  drawRadar($('#detRadar'), [{values: CATS.map(c=> categoryAverages(emp.id,30)[c.key]), color:'#f5a623'}], 3);
+
+  const days = last14Dates();
+  const dailyXP = days.map(d=> logs.filter(l=>l.date===d).reduce((s,l)=>s+xpOfEntry(l),0));
+  drawBars($('#detBars'), days.map(d=>d.slice(5)), dailyXP, teamColorHex(emp.team));
+
+  $('#backToRoster').addEventListener('click', ()=> switchTab('roster'));
+}
+function pcountHtml(name){
+  const recs = pdailyForEmployee(name).slice().sort((a,b)=> b.date.localeCompare(a.date));
+  if(!recs.length) return '<div class="empty">まだ記録がありません</div>';
+  const showPrice = currentRole==='boss';
+  return recs.slice(0,20).map(r=> `<div class="log-item"><div class="d">${r.date}</div><div class="tags">${escapeHtml(r.site)}/${escapeHtml(r.category)}　${r.p}P${showPrice? ' × ¥'+r.price+'/P ＝ ¥'+r.amount.toLocaleString() : ''}</div></div>`).join('');
+}
+function logHtml(l){
+  const tags = CATS.filter(c=> l.scores[c.key]>0).map(c=> `${c.label}${'★'.repeat(l.scores[c.key])}`).join('　');
+  const raterName = l.rater==='boss'?'社長':l.rater==='teamA'?'泉原':l.rater==='teamB'?'山﨑':'';
+  return `<div class="log-item">
+    <div class="d">${l.date}${raterName? '　評価者: '+raterName : ''}</div>
+    <div class="tags">${tags || '（スコアなし）'}</div>
+    ${l.note? `<div class="note">${escapeHtml(l.note)}</div>` : ''}
+  </div>`;
+}
+function last14Dates(){
+  const out=[];
+  for(let i=13;i>=0;i--){
+    const d = new Date(Date.now()-i*86400000);
+    out.push(d.toISOString().slice(0,10));
+  }
+  return out;
+}
+
+function renderTeam(){
+  const avgFor = (team)=>{
+    const ids = employees.filter(e=>e.team===team).map(e=>e.id);
+    return CATS.map(c=>{
+      const vals = ids.map(id=> categoryAverages(id,30)[c.key]).filter(v=>v>0);
+      return vals.length? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
+    });
+  };
+  drawRadar($('#teamRadar'), [
+    {values: avgFor('A'), color:'#4d8fd6'},
+    {values: avgFor('B'), color:'#e0672c'}
+  ], 3);
+
+  const days = last14Dates();
+  const logs = allLogsFlat();
+  const totals = days.map(d=> logs.filter(l=>l.date===d).reduce((s,l)=>s+xpOfEntry(l),0));
+  drawBars($('#teamBars'), days.map(d=>d.slice(5)), totals, '#f5a623');
+}
+
+function renderSettings(){
+  const list = $('#empEditList');
+  list.innerHTML = employees.map(e=>`
+    <div class="emplist-row" data-id="${e.id}">
+      <input type="text" value="${escapeHtml(e.name)}" data-field="name">
+      <select data-field="team">
+        <option value="A" ${e.team==='A'?'selected':''}>TEAM A</option>
+        <option value="B" ${e.team==='B'?'selected':''}>TEAM B</option>
+        <option value="P" ${e.team==='P'?'selected':''}>パート</option>
+      </select>
+      <button data-action="del">✕</button>
+    </div>
+  `).join('') || '<div class="empty">社員未登録</div>';
+
+  $$('.emplist-row', list).forEach(row=>{
+    const id = row.dataset.id;
+    row.querySelector('[data-field="name"]').addEventListener('change', async (e)=>{
+      const emp = employees.find(x=>x.id===id);
+      const oldName = emp.name;
+      const newName = e.target.value.trim() || emp.name;
+      emp.name = newName;
+      if(oldName!==newName && priceSettings[oldName]){
+        priceSettings[newName] = priceSettings[oldName];
+        delete priceSettings[oldName];
+        await storeSet('priceSettings', priceSettings);
+      }
+      await storeSet('employees', employees); renderRoster(); renderInputTab(); renderPriceSettings(); renderPcountSettings();
+    });
+    row.querySelector('[data-field="team"]').addEventListener('change', async (e)=>{
+      const emp = employees.find(x=>x.id===id);
+      emp.team = e.target.value;
+      emp.partTime = (e.target.value==='P');
+      await storeSet('employees', employees); renderRoster(); renderTeam(); renderPriceSettings(); renderPcountSettings();
+    });
+    row.querySelector('[data-action="del"]').addEventListener('click', async ()=>{
+      if(!confirm('この社員を削除しますか？（記録は残りますが表示されなくなります）')) return;
+      employees = employees.filter(x=>x.id!==id);
+      await storeSet('employees', employees);
+      renderSettings(); renderPriceSettings(); renderRoster(); renderInputTab(); renderTeam(); renderPcountSettings();
+    });
+  });
+  $('#pinBoss').value = settings.pins.boss || '';
+  $('#pinTeamA').value = settings.pins.teamA || '';
+  $('#pinTeamB').value = settings.pins.teamB || '';
+}
+
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function teamColor(team){ return team==='A' ? 'var(--teamA)' : team==='B' ? 'var(--teamB)' : 'var(--teamP)'; }
+function teamColorHex(team){ return team==='A' ? '#4d8fd6' : team==='B' ? '#e0672c' : '#9a8fae'; }
+
+// ---------- tabs ----------
+function switchTab(name){
+  $$('.tabs button').forEach(b=> b.classList.toggle('active', b.dataset.tab===name));
+  $$('section').forEach(s=> s.classList.toggle('active', s.id==='tab-'+name));
+  if(name==='team') renderTeam();
+  if(name==='detail') renderDetail();
+  if(name==='pcount') renderPcountSettings();
+  if(name==='comment') renderComments();
+}
+
+// ---------- role login ----------
+function requireRole(allowed, cb){
+  if(currentRole && allowed.includes(currentRole)){ cb(); return; }
+  openLogin(cb, allowed);
+}
+function openLogin(cb, allowed){
+  const wrap = document.createElement('div');
+  wrap.className='pinbox';
+  wrap.innerHTML = `<div class="inner">
+    <h3>🔒 ログイン</h3>
+    ${['boss','teamA','teamB'].map(r=>`
+      <label class="f" style="text-align:left">${ROLE_LABEL[r]} PIN</label>
+      <input type="text" class="mono" id="try_${r}" maxlength="6" placeholder="PIN">
+      <button class="btn secondary" data-role="${r}" style="margin-top:6px;">${ROLE_LABEL[r]}でログイン</button>
+    `).join('<div style="height:10px"></div>')}
+    <button class="btn secondary" id="loginCancel" style="margin-top:14px;">キャンセル</button>
+  </div>`;
+  document.body.appendChild(wrap);
+  $$('button[data-role]', wrap).forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const r = btn.dataset.role;
+      const v = $('#try_'+r, wrap).value;
+      if(v === (settings.pins[r] || '')){
+        currentRole = r; updateRoleUI(); wrap.remove();
+        renderInputTab(); renderPcountSettings(); renderPriceSettings();
+        if(allowed && !allowed.includes(r)){
+          alert(ROLE_LABEL[r] + 'ではこの操作はできません');
+        } else if(cb){ cb(); }
+      } else { alert('PINが違います'); }
+    });
+  });
+  $('#loginCancel', wrap).addEventListener('click', ()=> wrap.remove());
+}
+function updateRoleUI(){
+  const btn = $('#bossBtn');
+  btn.classList.toggle('on', !!currentRole);
+  btn.textContent = currentRole ? ROLE_LABEL[currentRole] + ' ログイン中' : '🔒 ログイン';
+}
+
+// ---------- init ----------
+async function init(){
+  let emp = await storeGet('employees');
+  if(!emp){ emp = SEED_EMPLOYEES; await storeSet('employees', emp); }
+  employees = emp;
+
+  let s = await storeGet('settings');
+  if(!s || !s.pins){ s = {pins:{boss:'1125', teamA:'1111', teamB:'2222'}}; await storeSet('settings', s); }
+  settings = s;
+
+  // 能力評価ログ（このアプリ独自のデータ）は直近6ヶ月分を読み込む
+  const now = new Date();
+  for(let i=0;i<6;i++){
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    const mk = d.toISOString().slice(0,7);
+    const l = await storeGet('logs:'+mk);
+    if(l) logsByMonth[mk] = l;
+  }
+
+  $('#inpDate').value = todayStr();
+  $('#pcDate').value = todayStr();
+  renderRoster();
+  renderInputTab();
+  renderSettings();
+  renderPcountSettings();
+
+  // config/setup（単価設定）と pdata（日次P数）は「大本 P数管理」アプリと同じ場所を
+  // リアルタイム購読する。どちらかのアプリで更新すれば、もう一方にも即座に反映される。
+  onSnapshot(doc(db,'config','setup'), (snap)=>{
+    const raw = snap.exists() ? snap.data() : {};
+    const out = {};
+    Object.keys(raw).forEach(id=>{
+      const name = empNameById(id);
+      out[name] = (raw[id]||[]).map(r=> ({id:uid(), site:r.site||'', category:r.category||'', price:Number(r.unitPrice)||0}));
+    });
+    priceSettings = out;
+    renderPriceSettings();
+    renderPcountSettings();
+    renderRoster();
+    if(currentDetailId) renderDetail();
+  }, (err)=> console.error('config/setup onSnapshot error', err));
+
+  onSnapshot(collection(db,'pdata'), (snapshot)=>{
+    rebuildPdailyFromSnapshot(snapshot);
+    renderPcountSettings();
+    renderRoster();
+    if(currentDetailId) renderDetail();
+  }, (err)=> console.error('pdata onSnapshot error', err));
+
+  $$('.tabs button').forEach(b=> b.addEventListener('click', ()=> switchTab(b.dataset.tab)));
+  $('#saveLogBtn').addEventListener('click', ()=> requireRole(['boss','teamA','teamB'], saveLog));
+  $('#pcEmployee').addEventListener('change', updateSiteOptions);
+  $('#pcSaveBtn').addEventListener('click', ()=> requireRole(['boss','teamA','teamB'], savePdaily));
+  $('#genCommentBtn').addEventListener('click', renderComments);
+  $('#addEmpBtn').addEventListener('click', ()=> requireRole(['boss'], async ()=>{
+    employees.push({id:uid(), name:'新しい社員', team:'A'});
+    await storeSet('employees', employees);
+    renderSettings(); renderPriceSettings(); renderRoster(); renderInputTab(); renderPcountSettings();
+  }));
+  $('#savePinBtn').addEventListener('click', ()=> requireRole(['boss'], async ()=>{
+    settings.pins.boss = $('#pinBoss').value.trim() || settings.pins.boss;
+    settings.pins.teamA = $('#pinTeamA').value.trim() || settings.pins.teamA;
+    settings.pins.teamB = $('#pinTeamB').value.trim() || settings.pins.teamB;
+    await storeSet('settings', settings); showToast('PINを変更しました');
+  }));
+  $('#resetBtn').addEventListener('click', ()=> requireRole(['boss'], async ()=>{
+    if(!confirm('社員一覧・能力評価ログ・PIN設定をリセットします。単価設定(config/setup)とP数の日次記録(pdata)は「大本 P数管理」アプリと共有している本番データのため、ここではリセットしません。よろしいですか？')) return;
+    employees = SEED_EMPLOYEES.slice();
+    logsByMonth = {};
+    await storeSet('employees', employees);
+    settings = {pins:{boss:'1125', teamA:'1111', teamB:'2222'}};
+    await storeSet('settings', settings);
+    renderSettings(); renderRoster(); renderInputTab(); renderPcountSettings();
+    showToast('社員一覧・評価ログ・PINをリセットしました');
+  }));
+  $('#bossBtn').addEventListener('click', ()=>{
+    if(currentRole){ currentRole=null; updateRoleUI(); renderInputTab(); renderPcountSettings(); renderPriceSettings(); }
+    else { openLogin(null, null); }
+  });
+
+  $('#loading').hidden = true;
+  $('#app').hidden = false;
+}
+
+init().catch(err=>{
+  console.error(err);
+  $('#loading').textContent = 'エラーが発生しました。再読み込みしてください。';
+});
+})();
+</script>
+</body>
+</html>
