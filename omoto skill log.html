@@ -370,7 +370,12 @@ const ROLE_TEAM = {boss:null, teamA:'A', teamB:'B'};
 
 const $ = (s,el)=> (el||document).querySelector(s);
 const $$ = (s,el)=> Array.from((el||document).querySelectorAll(s));
-const todayStr = ()=> new Date().toISOString().slice(0,10);
+const pad2 = (n)=> String(n).padStart(2,'0');
+// ローカルタイムのカレンダー日付/年月を "YYYY-MM-DD" / "YYYY-MM" で返す。
+// toISOString()はUTCに変換されるため、日本時間(UTC+9)ではこれを使うと日付・月が1つズレる。
+const toLocalDateStr = (d)=> d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
+const toLocalMonthStr = (d)=> d.getFullYear()+'-'+pad2(d.getMonth()+1);
+const todayStr = ()=> toLocalDateStr(new Date());
 const monthOf = (d)=> d.slice(0,7);
 const uid = ()=> 'x'+Math.random().toString(36).slice(2,10);
 
@@ -472,8 +477,8 @@ function mulberry32(a){
 const JOBS = ['','農民','兵士','魔法使い','武闘家','勇者'];
 const BADGE_COLOR = {'勇者':'#ffd166','武闘家':'#4d8fd6','魔法使い':'#e2564f','兵士':'#7ec850'};
 
-function dateStrAdd(ds, n){ const d = new Date(ds+'T00:00:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
-function mondayOf(ds){ const d = new Date(ds+'T00:00:00'); const off = (d.getDay()+6)%7; d.setDate(d.getDate()-off); return d.toISOString().slice(0,10); }
+function dateStrAdd(ds, n){ const d = new Date(ds+'T00:00:00'); d.setDate(d.getDate()+n); return toLocalDateStr(d); }
+function mondayOf(ds){ const d = new Date(ds+'T00:00:00'); const off = (d.getDay()+6)%7; d.setDate(d.getDate()-off); return toLocalDateStr(d); }
 
 // その日の貢献度pt（全体を100とした比率）
 function dailyPt(name, ds){
@@ -547,9 +552,9 @@ function currentJob(emp){
 function badgeFor(emp){
   const today = todayStr();
   const d = new Date(today+'T00:00:00'); d.setDate(1);
-  const firstOfMonth = d.toISOString().slice(0,10);
+  const firstOfMonth = toLocalDateStr(d);
   d.setMonth(d.getMonth()-1);
-  const prevMonth = d.toISOString().slice(0,7);
+  const prevMonth = toLocalMonthStr(d);
   const j = jobForMonth(emp, prevMonth, firstOfMonth);
   return j.job!=='農民' ? j.job : null;
 }
@@ -1166,7 +1171,7 @@ function last14Dates(){
   const out=[];
   for(let i=13;i>=0;i--){
     const d = new Date(Date.now()-i*86400000);
-    out.push(d.toISOString().slice(0,10));
+    out.push(toLocalDateStr(d));
   }
   return out;
 }
@@ -1303,7 +1308,7 @@ async function init(){
   const now = new Date();
   for(let i=0;i<6;i++){
     const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
-    const mk = d.toISOString().slice(0,7);
+    const mk = toLocalMonthStr(d);
     const l = await storeGet('logs:'+mk);
     if(l) logsByMonth[mk] = l;
   }
