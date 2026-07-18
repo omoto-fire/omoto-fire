@@ -276,13 +276,7 @@
     <div class="card">
       <h2>🔒 権限PIN（社長・チームリーダー）</h2>
       <p style="font-size:12px;color:var(--dim);margin:0 0 4px;">「記録」（能力）は社長・泉原・山﨑の3名とも全社員分を入力できます。「P数」は泉原がAチーム分、山﨑がBチーム分、社長は全員分を入力できます。単価の閲覧・変更は社長のみです。</p>
-      <label class="f">👑 社長 PIN</label>
-      <input type="text" id="pinBoss" class="mono" maxlength="6" placeholder="4桁の数字">
-      <label class="f">泉原（Aチームリーダー）PIN</label>
-      <input type="text" id="pinTeamA" class="mono" maxlength="6" placeholder="4桁の数字">
-      <label class="f">山﨑（Bチームリーダー）PIN</label>
-      <input type="text" id="pinTeamB" class="mono" maxlength="6" placeholder="4桁の数字">
-      <button class="btn secondary" id="savePinBtn">PINを変更する</button>
+      <div id="pinEditList"></div>
     </div>
     <div class="card">
       <h2 style="color:var(--danger)">⚠ データ</h2>
@@ -786,6 +780,39 @@ function renderPriceSettings(){
   });
 }
 
+// ---------- PIN設定（社長は全員分、泉原・山﨑は自分の分のみ閲覧・変更可） ----------
+const PIN_ROLES = [
+  {role:'boss',  label:'👑 社長 PIN'},
+  {role:'teamA', label:'泉原（Aチームリーダー）PIN'},
+  {role:'teamB', label:'山﨑（Bチームリーダー）PIN'}
+];
+function renderPinSettings(){
+  const box = $('#pinEditList');
+  if(!box) return;
+  if(!currentRole){
+    box.innerHTML = '<div class="empty">🔒 PINの確認・変更にはログインが必要です。右上のログインからPINを入力してください。</div>';
+    return;
+  }
+  // 社長は全員分、泉原・山﨑は自分の分のみ表示（他の人のPINは見えない）
+  const visible = currentRole==='boss' ? PIN_ROLES : PIN_ROLES.filter(f=> f.role===currentRole);
+  box.innerHTML = visible.map(f=> `
+      <label class="f">${escapeHtml(f.label)}</label>
+      <input type="text" class="mono pin-input" data-role="${f.role}" maxlength="6" placeholder="${settings.pins[f.role] ? '••••' : '4桁の数字'}">
+  `).join('') + '<button class="btn secondary" id="savePinBtn">PINを変更する</button>';
+
+  $('#savePinBtn', box).addEventListener('click', ()=> requireRole([currentRole], async ()=>{
+    let changed = false;
+    $$('.pin-input', box).forEach(inp=>{
+      const v = inp.value.trim();
+      if(v){ settings.pins[inp.dataset.role] = v; changed = true; }
+    });
+    if(!changed){ showToast('変更するPINを入力してください'); return; }
+    await storeSet('settings', settings);
+    showToast('PINを変更しました');
+    renderPinSettings();
+  }));
+}
+
 // ---------- pixel avatar ----------
 function drawAvatar(canvas, name, team, job, badge, scale){
   scale = scale || 6;
@@ -1236,9 +1263,7 @@ function renderSettings(){
       renderSettings(); renderPriceSettings(); renderRoster(); renderInputTab(); renderTeam(); renderPcountSettings();
     });
   });
-  $('#pinBoss').value = settings.pins.boss || '';
-  $('#pinTeamA').value = settings.pins.teamA || '';
-  $('#pinTeamB').value = settings.pins.teamB || '';
+  renderPinSettings();
 }
 
 function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
@@ -1279,7 +1304,7 @@ function openLogin(cb, allowed){
       const v = $('#try_'+r, wrap).value;
       if(v === (settings.pins[r] || '')){
         currentRole = r; updateRoleUI(); wrap.remove();
-        renderInputTab(); renderPcountSettings(); renderPriceSettings();
+        renderInputTab(); renderPcountSettings(); renderPriceSettings(); renderPinSettings();
         if(allowed && !allowed.includes(r)){
           alert(ROLE_LABEL[r] + 'ではこの操作はできません');
         } else if(cb){ cb(); }
@@ -1353,12 +1378,6 @@ async function init(){
     await storeSet('employees', employees);
     renderSettings(); renderPriceSettings(); renderRoster(); renderInputTab(); renderPcountSettings();
   }));
-  $('#savePinBtn').addEventListener('click', ()=> requireRole(['boss'], async ()=>{
-    settings.pins.boss = $('#pinBoss').value.trim() || settings.pins.boss;
-    settings.pins.teamA = $('#pinTeamA').value.trim() || settings.pins.teamA;
-    settings.pins.teamB = $('#pinTeamB').value.trim() || settings.pins.teamB;
-    await storeSet('settings', settings); showToast('PINを変更しました');
-  }));
   $('#resetBtn').addEventListener('click', ()=> requireRole(['boss'], async ()=>{
     if(!confirm('社員一覧・能力評価ログ・PIN設定をリセットします。単価設定(config/setup)とP数の日次記録(pdata)は「大本 P数管理」アプリと共有している本番データのため、ここではリセットしません。よろしいですか？')) return;
     employees = SEED_EMPLOYEES.slice();
@@ -1370,7 +1389,7 @@ async function init(){
     showToast('社員一覧・評価ログ・PINをリセットしました');
   }));
   $('#bossBtn').addEventListener('click', ()=>{
-    if(currentRole){ currentRole=null; updateRoleUI(); renderInputTab(); renderPcountSettings(); renderPriceSettings(); }
+    if(currentRole){ currentRole=null; updateRoleUI(); renderInputTab(); renderPcountSettings(); renderPriceSettings(); renderPinSettings(); }
     else { openLogin(null, null); }
   });
 
