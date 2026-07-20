@@ -121,6 +121,13 @@
   .price-row button{background:none;border:none;color:var(--danger);height:36px;font-size:15px;cursor:pointer;}
   .price-addbtn{margin-top:10px;background:var(--panel-2);color:var(--cream);border:1px dashed var(--line);border-radius:8px;padding:8px;font-size:12px;width:100%;cursor:pointer;}
 
+  .thanks-row{display:flex;align-items:center;gap:8px;background:#111522;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:6px;}
+  .thanks-row .nm{font-size:13px;font-weight:700;flex:0 0 92px;}
+  .thanks-hearts{font-size:13px;color:var(--danger);letter-spacing:1px;flex:1;overflow-wrap:anywhere;}
+  .thanks-btn{background:var(--panel-2);border:1px solid var(--line);color:var(--cream);border-radius:8px;padding:7px 10px;font-size:14px;cursor:pointer;flex:0 0 auto;}
+  .thanks-btn.sent{background:var(--danger);color:#fff;border-color:var(--danger);}
+  .thanks-btn:disabled{opacity:.4;cursor:not-allowed;}
+
   .radarwrap,.chartwrap{display:flex;justify-content:center;margin:8px 0;}
 
   .legend{display:flex;gap:14px;justify-content:center;font-size:11px;color:var(--dim);margin-top:4px;}
@@ -190,17 +197,14 @@
     <div class="card">
       <h2>📥 今日の記録を入力</h2>
       <p style="font-size:12px;color:var(--dim);margin:0 0 8px;">個人の能力は社長・泉原・山﨑の3名がそれぞれ入力し、表示されるステータスはその平均値です。</p>
-      <div id="inputLocked" class="empty" hidden>🔒 記録の入力には社長・泉原・山﨑いずれかでのログインが必要です。右上のログインから入力してください。</div>
-      <div id="inputForm">
-        <label class="f">対象社員</label>
-        <select id="inpEmployee"></select>
-        <label class="f">記録日</label>
-        <input type="date" id="inpDate">
-        <div id="inpScores" style="margin-top:12px;"></div>
-        <label class="f">メモ（良かった判断・困ったこと）</label>
-        <textarea id="inpNote" rows="3" placeholder="例）追加工事の口頭依頼を、断る条件どおり保留にできた"></textarea>
-        <button class="btn" id="saveLogBtn">✓ この内容で保存する</button>
-      </div>
+      <label class="f">対象社員</label>
+      <select id="inpEmployee"></select>
+      <label class="f">記録日</label>
+      <input type="date" id="inpDate">
+      <div id="inpScores" style="margin-top:12px;"></div>
+      <label class="f">メモ（良かった判断・困ったこと）</label>
+      <textarea id="inpNote" rows="3" placeholder="例）追加工事の口頭依頼を、断る条件どおり保留にできた"></textarea>
+      <button class="btn" id="saveLogBtn">✓ この内容で保存する</button>
     </div>
   </section>
 
@@ -215,16 +219,20 @@
       <div id="pcRows">
         <label class="f">現場 1</label>
         <select id="pcSite1" class="pcSite"></select>
-        <input type="number" id="pcP1" class="mono pcP" placeholder="P数（例）5" style="margin-top:6px;">
+        <label class="f">P数</label>
+        <select id="pcP1" class="mono pcP"></select>
         <label class="f">現場 2</label>
         <select id="pcSite2" class="pcSite"></select>
-        <input type="number" id="pcP2" class="mono pcP" placeholder="P数" style="margin-top:6px;">
+        <label class="f">P数</label>
+        <select id="pcP2" class="mono pcP"></select>
         <label class="f">現場 3</label>
         <select id="pcSite3" class="pcSite"></select>
-        <input type="number" id="pcP3" class="mono pcP" placeholder="P数" style="margin-top:6px;">
+        <label class="f">P数</label>
+        <select id="pcP3" class="mono pcP"></select>
         <label class="f">現場 4</label>
         <select id="pcSite4" class="pcSite"></select>
-        <input type="number" id="pcP4" class="mono pcP" placeholder="P数" style="margin-top:6px;">
+        <label class="f">P数</label>
+        <select id="pcP4" class="mono pcP"></select>
       </div>
       <button class="btn" id="pcSaveBtn">＋ この内容で保存する</button>
     </div>
@@ -235,6 +243,13 @@
   </section>
 
   <section id="tab-detail">
+    <div class="card" id="thanksCard">
+      <h2>💛 ありがとうポイント</h2>
+      <p style="font-size:12px;color:var(--dim);margin:0 0 8px;">感謝を伝えたい人をタップしてください（1人1日1回まで）。まずは自分の名前を選んでください。</p>
+      <label class="f">あなたのお名前</label>
+      <select id="thanksSender"></select>
+      <div id="thanksList" style="margin-top:10px;"></div>
+    </div>
     <div id="detailBody"><div class="empty">一覧から社員をタップしてください</div></div>
   </section>
 
@@ -279,7 +294,13 @@
     <div class="card">
       <h2>🔒 権限PIN（社長・チームリーダー）</h2>
       <p style="font-size:12px;color:var(--dim);margin:0 0 4px;">「記録」（能力）は社長・泉原・山﨑の3名とも全社員分を入力できます。「P数」は泉原がAチーム分、山﨑がBチーム分、社長は全員分を入力できます。単価の閲覧・変更は社長のみです。</p>
-      <div id="pinEditList"></div>
+      <label class="f">👑 社長 PIN</label>
+      <input type="text" id="pinBoss" class="mono" maxlength="6" placeholder="4桁の数字">
+      <label class="f">泉原（Aチームリーダー）PIN</label>
+      <input type="text" id="pinTeamA" class="mono" maxlength="6" placeholder="4桁の数字">
+      <label class="f">山﨑（Bチームリーダー）PIN</label>
+      <input type="text" id="pinTeamB" class="mono" maxlength="6" placeholder="4桁の数字">
+      <button class="btn secondary" id="savePinBtn">PINを変更する</button>
     </div>
     <div class="card">
       <h2 style="color:var(--danger)">⚠ データ</h2>
@@ -356,6 +377,7 @@ let settings = {pins:{boss:'0000', teamA:'1111', teamB:'2222'}};
 let logsByMonth = {}; // 'YYYY-MM' -> array of ability-score entries
 let priceSettings = {}; // { employeeName: [{id, site, category, price}] }
 let pdaily = {}; // 'YYYY-MM' -> array of {id, employeeName, date, site, category, price, p, amount}
+let thanksByDate = {}; // 'YYYY-MM-DD' -> { senderId: recipientId }
 let currentDetailId = null;
 let currentRole = null; // 'boss' | 'teamA' | 'teamB' | null
 let pendingScores = {};
@@ -367,12 +389,7 @@ const ROLE_TEAM = {boss:null, teamA:'A', teamB:'B'};
 
 const $ = (s,el)=> (el||document).querySelector(s);
 const $$ = (s,el)=> Array.from((el||document).querySelectorAll(s));
-const pad2 = (n)=> String(n).padStart(2,'0');
-// ローカルタイムのカレンダー日付/年月を "YYYY-MM-DD" / "YYYY-MM" で返す。
-// toISOString()はUTCに変換されるため、日本時間(UTC+9)ではこれを使うと日付・月が1つズレる。
-const toLocalDateStr = (d)=> d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
-const toLocalMonthStr = (d)=> d.getFullYear()+'-'+pad2(d.getMonth()+1);
-const todayStr = ()=> toLocalDateStr(new Date());
+const todayStr = ()=> new Date().toISOString().slice(0,10);
 const monthOf = (d)=> d.slice(0,7);
 const uid = ()=> 'x'+Math.random().toString(36).slice(2,10);
 
@@ -474,8 +491,8 @@ function mulberry32(a){
 const JOBS = ['','農民','兵士','魔法使い','武闘家','勇者'];
 const BADGE_COLOR = {'勇者':'#ffd166','武闘家':'#4d8fd6','魔法使い':'#e2564f','兵士':'#7ec850'};
 
-function dateStrAdd(ds, n){ const d = new Date(ds+'T00:00:00'); d.setDate(d.getDate()+n); return toLocalDateStr(d); }
-function mondayOf(ds){ const d = new Date(ds+'T00:00:00'); const off = (d.getDay()+6)%7; d.setDate(d.getDate()-off); return toLocalDateStr(d); }
+function dateStrAdd(ds, n){ const d = new Date(ds+'T00:00:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
+function mondayOf(ds){ const d = new Date(ds+'T00:00:00'); const off = (d.getDay()+6)%7; d.setDate(d.getDate()-off); return d.toISOString().slice(0,10); }
 
 // その日の貢献度pt（全体を100とした比率）
 function dailyPt(name, ds){
@@ -545,32 +562,15 @@ function currentJob(emp){
   const today = todayStr();
   return jobForMonth(emp, today.slice(0,7), today);
 }
-// 月ごとのバッジ履歴（新しい月が先頭）。農民の月はバッジなしとして除外。
-const BADGE_HISTORY_MONTHS = 11;
-const ROSTER_MAX_BADGES = 3; // 一覧カードは直近数件のみ表示し、残りは「＋N」にまとめる
-function badgeHistory(emp, maxMonths){
-  maxMonths = maxMonths || BADGE_HISTORY_MONTHS;
-  const d = new Date(todayStr()+'T00:00:00'); d.setDate(1);
-  let asOf = toLocalDateStr(d); // 現在の月の1日＝直前の月が「完了」したとみなす基準日
-  const out = [];
-  for(let i=0;i<maxMonths;i++){
-    d.setMonth(d.getMonth()-1);
-    const monthKey = toLocalMonthStr(d);
-    const j = jobForMonth(emp, monthKey, asOf);
-    if(j.job!=='農民') out.push({month:monthKey, job:j.job});
-    asOf = toLocalDateStr(d);
-  }
-  return out; // 先頭=直近の月
-}
-// 同じ職業が連続した月をまとめて「×N」表示にする
-function aggregateBadges(history){
-  const out = [];
-  history.forEach(h=>{
-    const last = out[out.length-1];
-    if(last && last.job===h.job) last.count++;
-    else out.push({job:h.job, count:1});
-  });
-  return out;
+// 先月の最終職業（バッチ）
+function badgeFor(emp){
+  const today = todayStr();
+  const d = new Date(today+'T00:00:00'); d.setDate(1);
+  const firstOfMonth = d.toISOString().slice(0,10);
+  d.setMonth(d.getMonth()-1);
+  const prevMonth = d.toISOString().slice(0,7);
+  const j = jobForMonth(emp, prevMonth, firstOfMonth);
+  return j.job!=='農民' ? j.job : null;
 }
 
 // ---------- 金曜のひとことコメント（ルールベースの自動生成・LLM呼び出しではない） ----------
@@ -685,6 +685,57 @@ function ratioFor(name){
   const mine = monthlyAmount(name, m);
   return Math.round((mine/total)*1000)/10;
 }
+// ---------- ありがとうポイント ----------
+function allThanksFlat(){
+  let out = [];
+  Object.keys(thanksByDate).forEach(date=>{
+    const day = thanksByDate[date]||{};
+    Object.keys(day).forEach(senderId=> out.push({date, senderId, recipientId: day[senderId]}));
+  });
+  return out;
+}
+function heartsFor(empId){ return allThanksFlat().filter(t=>t.recipientId===empId).length; }
+async function writeThanksDay(date, senderId, recipientId){
+  try{ await setDoc(doc(db,'thanks',date), {[senderId]: recipientId}, {merge:true}); return true; }
+  catch(e){ console.error('writeThanksDay failed', e); return false; }
+}
+function renderThanks(){
+  const senderSel = $('#thanksSender');
+  if(!senderSel) return;
+  const prevSender = senderSel.value;
+  senderSel.innerHTML = employees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('') || '<option value="">社員未登録</option>';
+  if(prevSender && employees.some(e=>e.id===prevSender)) senderSel.value = prevSender;
+  renderThanksList();
+}
+function renderThanksList(){
+  const senderId = $('#thanksSender').value;
+  const today = todayStr();
+  const sentTo = (thanksByDate[today]||{})[senderId];
+  const list = $('#thanksList');
+  list.innerHTML = employees.filter(e=>e.id!==senderId).map(e=>{
+    const hearts = '♥'.repeat(heartsFor(e.id));
+    const isTarget = sentTo===e.id;
+    const disabled = !!sentTo && !isTarget;
+    return `<div class="thanks-row">
+      <div class="nm">${escapeHtml(e.name)}</div>
+      <div class="thanks-hearts">${hearts||'－'}</div>
+      <button class="thanks-btn ${isTarget?'sent':''}" data-id="${e.id}" ${disabled?'disabled':''}>${isTarget?'♥ 送信済み':'♥ 送る'}</button>
+    </div>`;
+  }).join('') || '<div class="empty">社員未登録</div>';
+  $$('.thanks-btn', list).forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const recipientId = btn.dataset.id;
+      const senderId2 = $('#thanksSender').value;
+      if(!senderId2){ alert('あなたのお名前を選択してください'); return; }
+      const today2 = todayStr();
+      if((thanksByDate[today2]||{})[senderId2]){ alert('今日はすでにありがとうを送っています（1日1回まで）'); return; }
+      const ok = await writeThanksDay(today2, senderId2, recipientId);
+      if(!ok){ alert('保存に失敗しました。通信状況を確認してください。'); return; }
+      showToast('ありがとうを送りました💛');
+    });
+  });
+}
+
 function renderPcountSettings(){
   const empSel = $('#pcEmployee');
   const team = ROLE_TEAM[currentRole];
@@ -703,6 +754,10 @@ function renderPcountSettings(){
       <div class="d">${r.date}</div>
       <div class="tags">${escapeHtml(r.employeeName)}　${escapeHtml(r.site)}/${escapeHtml(r.category)}　${r.p}P${showPrice? ' × ¥'+r.price+'/P ＝ ¥'+r.amount.toLocaleString() : ''}</div>
     </div>`).join('') : '<div class="empty">今月の実績がまだありません</div>';
+}
+function populatePCountSelects(){
+  const opts = '<option value="">－（未入力）</option>' + Array.from({length:20},(_,i)=>i+1).map(n=>`<option value="${n}">${n}</option>`).join('');
+  for(let i=1;i<=4;i++){ const el = $('#pcP'+i); if(el) el.innerHTML = opts; }
 }
 function updateSiteOptions(){
   const name = $('#pcEmployee').value;
@@ -800,61 +855,12 @@ function renderPriceSettings(){
   });
 }
 
-// ---------- PIN設定（社長は全員分、泉原・山﨑は自分の分のみ閲覧・変更可） ----------
-const PIN_ROLES = [
-  {role:'boss',  label:'👑 社長 PIN'},
-  {role:'teamA', label:'泉原（Aチームリーダー）PIN'},
-  {role:'teamB', label:'山﨑（Bチームリーダー）PIN'}
-];
-function renderPinSettings(){
-  const box = $('#pinEditList');
-  if(!box) return;
-  if(!currentRole){
-    box.innerHTML = '<div class="empty">🔒 PINの確認・変更にはログインが必要です。右上のログインからPINを入力してください。</div>';
-    return;
-  }
-  // 社長は全員分、泉原・山﨑は自分の分のみ表示（他の人のPINは見えない）
-  const visible = currentRole==='boss' ? PIN_ROLES : PIN_ROLES.filter(f=> f.role===currentRole);
-  box.innerHTML = visible.map(f=> `
-      <label class="f">${escapeHtml(f.label)}</label>
-      <input type="text" class="mono pin-input" data-role="${f.role}" maxlength="6" placeholder="${settings.pins[f.role] ? '••••' : '4桁の数字'}">
-  `).join('') + '<button class="btn secondary" id="savePinBtn">PINを変更する</button>';
-
-  $('#savePinBtn', box).addEventListener('click', ()=> requireRole([currentRole], async ()=>{
-    let changed = false;
-    $$('.pin-input', box).forEach(inp=>{
-      const v = inp.value.trim();
-      if(v){ settings.pins[inp.dataset.role] = v; changed = true; }
-    });
-    if(!changed){ showToast('変更するPINを入力してください'); return; }
-    await storeSet('settings', settings);
-    showToast('PINを変更しました');
-    renderPinSettings();
-  }));
-}
-
 // ---------- pixel avatar ----------
-function drawAvatar(canvas, name, team, job, badges, scale, maxVisible){
+function drawAvatar(canvas, name, team, job, badge, scale){
   scale = scale || 6;
   const ctx = canvas.getContext('2d');
   const W=9,H=12;
-  const avatarW = W*scale, avatarH = H*scale;
-
-  // 月ごとのバッジ（新しい月が上）を体の右側に縦列表示。上限(maxVisible)を超える分は「＋N」にまとめる。
-  const list = badges || [];
-  const visible = (maxVisible!=null) ? list.slice(0, maxVisible) : list;
-  const hiddenCount = (maxVisible!=null) ? Math.max(0, list.length-maxVisible) : 0;
-  const hasCol = visible.length>0 || hiddenCount>0;
-  const bs = Math.max(4, Math.round(scale*0.62));
-  const bGap = Math.max(1, Math.round(scale*0.14));
-  const bw = Math.round(bs*1.3);
-  const colX = avatarW + bGap*2;
-  const colStartY = 4*scale;
-  const rowsNeeded = visible.length + (hiddenCount>0 ? 1 : 0);
-  const overflow = Math.max(0, rowsNeeded*(bs+bGap) - (avatarH-colStartY));
-
-  canvas.width = hasCol ? colX+bw : avatarW;
-  canvas.height = avatarH+overflow;
+  canvas.width = W*scale; canvas.height = H*scale;
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
   const half = [
@@ -992,35 +998,17 @@ function drawAvatar(canvas, name, team, job, badges, scale, maxVisible){
     ctx.fillRect(0, 5.4*scale, scale*1.4, scale*0.6);
     ctx.strokeStyle = '#ffd166';
     ctx.lineWidth = Math.max(1, scale*0.18);
-    ctx.strokeRect(0.5, 0.5, avatarW-1, avatarH-1);
+    ctx.strokeRect(0.5, 0.5, canvas.width-1, canvas.height-1);
   }
 
-  // 月ごとのバッジ列（体の右側、新しい月が上）
-  visible.forEach((b,i)=>{
-    const y = colStartY + i*(bs+bGap);
-    ctx.fillStyle = BADGE_COLOR[b.job] || '#5b6b85';
-    ctx.fillRect(colX, y, bw, bs);
+  // 先月のバッチ（右上）
+  if(badge && BADGE_COLOR[badge]){
+    const b = scale*1.6;
+    ctx.fillStyle = BADGE_COLOR[badge];
+    ctx.fillRect(canvas.width-b-1, 1, b, b);
     ctx.strokeStyle = '#171b24';
     ctx.lineWidth = 1;
-    ctx.strokeRect(colX+0.5, y+0.5, bw-1, bs-1);
-    if(b.count>1){
-      ctx.fillStyle = 'rgba(23,27,36,.85)';
-      ctx.font = `bold ${Math.max(7,Math.round(bs*0.62))}px system-ui, -apple-system, sans-serif`;
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText('×'+b.count, colX+bw/2, y+bs/2+0.5);
-    }
-  });
-  if(hiddenCount>0){
-    const y = colStartY + visible.length*(bs+bGap);
-    ctx.fillStyle = '#2a3140';
-    ctx.strokeStyle = '#3a4356';
-    ctx.lineWidth = 1;
-    ctx.fillRect(colX, y, bw, bs);
-    ctx.strokeRect(colX+0.5, y+0.5, bw-1, bs-1);
-    ctx.fillStyle = '#8b93a7';
-    ctx.font = `bold ${Math.max(7,Math.round(bs*0.58))}px system-ui, -apple-system, sans-serif`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('+'+hiddenCount, colX+bw/2, y+bs/2+0.5);
+    ctx.strokeRect(canvas.width-b-1, 1, b, b);
   }
 }
 function shade(hex, amt){
@@ -1109,8 +1097,7 @@ function renderRoster(){
   if(!employees.length){ grid.innerHTML = '<div class="empty">設定タブから社員を登録してください</div>'; return; }
   employees.forEach(emp=>{
     const jb = currentJob(emp);
-    const history = badgeHistory(emp);
-    const aggBadges = aggregateBadges(history);
+    const badge = badgeFor(emp);
     const ratio = ratioFor(emp.name);
     const pct = Math.min(100, Math.round(((ratio||0)/30)*100)); // 30pt=勇者ラインを満タンとする
     const div = document.createElement('div');
@@ -1120,28 +1107,16 @@ function renderRoster(){
       <canvas></canvas>
       <div class="ratio-badge">${ratio!=null ? ratio+'pt' : '－'}</div>
       <div class="nm">${escapeHtml(emp.name)}</div>
-      <div class="lv">Lv.${jb.lv} ${jb.job}${history.length? '　🎖':''}</div>
+      <div class="lv">Lv.${jb.lv} ${jb.job}${badge? '　🎖':''}</div>
       <div class="xpbar"><i style="width:${pct}%"></i></div>
     `;
-    drawAvatar(div.querySelector('canvas'), emp.name, emp.team, jb.job, aggBadges, 5, ROSTER_MAX_BADGES);
+    drawAvatar(div.querySelector('canvas'), emp.name, emp.team, jb.job, badge, 5);
     div.addEventListener('click', ()=>{ currentDetailId = emp.id; switchTab('detail'); renderDetail(); });
     grid.appendChild(div);
   });
 }
 
 function renderInputTab(){
-  const locked = $('#inputLocked');
-  const form = $('#inputForm');
-  // 記録タブは社長・泉原・山﨑いずれかのログインが無いと操作自体をさせない
-  // （保存ボタンのrequireRoleだけでは、未ログインでも社員選択・スコア入力・メモ入力ができてしまうため）
-  if(!currentRole){
-    if(locked) locked.hidden = false;
-    if(form) form.hidden = true;
-    return;
-  }
-  if(locked) locked.hidden = true;
-  if(form) form.hidden = false;
-
   const sel = $('#inpEmployee');
   sel.innerHTML = employees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}（${e.team}）</option>`).join('') || '<option>社員未登録</option>';
   if(!$('#inpDate').value) $('#inpDate').value = todayStr();
@@ -1204,9 +1179,7 @@ function renderDetail(){
   const emp = employees.find(e=>e.id===currentDetailId);
   if(!emp){ body.innerHTML = '<div class="empty">社員が見つかりません</div>'; return; }
   const jb = currentJob(emp);
-  const history = badgeHistory(emp);
-  const aggBadges = aggregateBadges(history);
-  const latestBadge = history.length ? history[0].job : null;
+  const badge = badgeFor(emp);
   const logs = logsForEmployee(emp.id).slice().sort((a,b)=> b.date.localeCompare(a.date));
 
   body.innerHTML = `
@@ -1217,7 +1190,7 @@ function renderDetail(){
         <div class="meta">
           <div class="nm">${escapeHtml(emp.name)}</div>
           <div class="lv">Lv.${jb.lv} ${jb.job}</div>
-          <div class="team">TEAM ${emp.team}${latestBadge? '　先月: '+latestBadge+'バッジ🎖' : ''}</div>
+          <div class="team">TEAM ${emp.team}${badge? '　先月: '+badge+'バッチ🎖' : ''}</div>
           <div class="ratio-badge">${(()=>{const r=ratioFor(emp.name); return r!=null? '貢献度 '+r+'pt' : '貢献度 －';})()}</div>
         </div>
       </div>
@@ -1239,7 +1212,7 @@ function renderDetail(){
       <div id="detLogs">${logs.length? logs.slice(0,20).map(logHtml).join('') : '<div class="empty">まだ記録がありません</div>'}</div>
     </div>
   `;
-  drawAvatar($('#detCanvas'), emp.name, emp.team, jb.job, aggBadges, 9);
+  drawAvatar($('#detCanvas'), emp.name, emp.team, jb.job, badge, 9);
   drawRadar($('#detRadar'), [{values: CATS.map(c=> categoryAverages(emp.id,30)[c.key]), color:'#f5a623'}], 3);
 
   const days = last14Dates();
@@ -1267,7 +1240,7 @@ function last14Dates(){
   const out=[];
   for(let i=13;i>=0;i--){
     const d = new Date(Date.now()-i*86400000);
-    out.push(toLocalDateStr(d));
+    out.push(d.toISOString().slice(0,10));
   }
   return out;
 }
@@ -1332,7 +1305,9 @@ function renderSettings(){
       renderSettings(); renderPriceSettings(); renderRoster(); renderInputTab(); renderTeam(); renderPcountSettings();
     });
   });
-  renderPinSettings();
+  $('#pinBoss').value = settings.pins.boss || '';
+  $('#pinTeamA').value = settings.pins.teamA || '';
+  $('#pinTeamB').value = settings.pins.teamB || '';
 }
 
 function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
@@ -1347,6 +1322,7 @@ function switchTab(name){
   if(name==='detail') renderDetail();
   if(name==='pcount') renderPcountSettings();
   if(name==='comment') renderComments();
+  if(name==='detail') renderThanks();
 }
 
 // ---------- role login ----------
@@ -1373,7 +1349,7 @@ function openLogin(cb, allowed){
       const v = $('#try_'+r, wrap).value;
       if(v === (settings.pins[r] || '')){
         currentRole = r; updateRoleUI(); wrap.remove();
-        renderInputTab(); renderPcountSettings(); renderPriceSettings(); renderPinSettings();
+        renderInputTab(); renderPcountSettings(); renderPriceSettings();
         if(allowed && !allowed.includes(r)){
           alert(ROLE_LABEL[r] + 'ではこの操作はできません');
         } else if(cb){ cb(); }
@@ -1398,22 +1374,23 @@ async function init(){
   if(!s || !s.pins){ s = {pins:{boss:'1125', teamA:'1111', teamB:'2222'}}; await storeSet('settings', s); }
   settings = s;
 
-  // 能力評価ログ（このアプリ独自のデータ）を読み込む。バッジ履歴（過去BADGE_HISTORY_MONTHSヶ月分）の
-  // 職業判定に使うため、今月分+直近BADGE_HISTORY_MONTHSヶ月分をカバーする範囲を読み込む。
+  // 能力評価ログ（このアプリ独自のデータ）は直近6ヶ月分を読み込む
   const now = new Date();
-  for(let i=0;i<=BADGE_HISTORY_MONTHS;i++){
+  for(let i=0;i<6;i++){
     const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
-    const mk = toLocalMonthStr(d);
+    const mk = d.toISOString().slice(0,7);
     const l = await storeGet('logs:'+mk);
     if(l) logsByMonth[mk] = l;
   }
 
   $('#inpDate').value = todayStr();
   $('#pcDate').value = todayStr();
+  populatePCountSelects();
   renderRoster();
   renderInputTab();
   renderSettings();
   renderPcountSettings();
+  renderThanks();
 
   // config/setup（単価設定）と pdata（日次P数）は「大本 P数管理」アプリと同じ場所を
   // リアルタイム購読する。どちらかのアプリで更新すれば、もう一方にも即座に反映される。
@@ -1438,15 +1415,29 @@ async function init(){
     if(currentDetailId) renderDetail();
   }, (err)=> console.error('pdata onSnapshot error', err));
 
+  onSnapshot(collection(db,'thanks'), (snapshot)=>{
+    const next = {};
+    snapshot.forEach(d=> next[d.id] = d.data());
+    thanksByDate = next;
+    renderThanksList();
+  }, (err)=> console.error('thanks onSnapshot error', err));
+
   $$('.tabs button').forEach(b=> b.addEventListener('click', ()=> switchTab(b.dataset.tab)));
   $('#saveLogBtn').addEventListener('click', ()=> requireRole(['boss','teamA','teamB'], saveLog));
   $('#pcEmployee').addEventListener('change', updateSiteOptions);
-  $('#pcSaveBtn').addEventListener('click', ()=> requireRole(['boss','teamA','teamB'], savePdaily));
+  $('#pcSaveBtn').addEventListener('click', savePdaily);
+  $('#thanksSender').addEventListener('change', renderThanksList);
   $('#genCommentBtn').addEventListener('click', renderComments);
   $('#addEmpBtn').addEventListener('click', ()=> requireRole(['boss'], async ()=>{
     employees.push({id:uid(), name:'新しい社員', team:'A'});
     await storeSet('employees', employees);
     renderSettings(); renderPriceSettings(); renderRoster(); renderInputTab(); renderPcountSettings();
+  }));
+  $('#savePinBtn').addEventListener('click', ()=> requireRole(['boss'], async ()=>{
+    settings.pins.boss = $('#pinBoss').value.trim() || settings.pins.boss;
+    settings.pins.teamA = $('#pinTeamA').value.trim() || settings.pins.teamA;
+    settings.pins.teamB = $('#pinTeamB').value.trim() || settings.pins.teamB;
+    await storeSet('settings', settings); showToast('PINを変更しました');
   }));
   $('#resetBtn').addEventListener('click', ()=> requireRole(['boss'], async ()=>{
     if(!confirm('社員一覧・能力評価ログ・PIN設定をリセットします。単価設定(config/setup)とP数の日次記録(pdata)は「大本 P数管理」アプリと共有している本番データのため、ここではリセットしません。よろしいですか？')) return;
@@ -1459,7 +1450,7 @@ async function init(){
     showToast('社員一覧・評価ログ・PINをリセットしました');
   }));
   $('#bossBtn').addEventListener('click', ()=>{
-    if(currentRole){ currentRole=null; updateRoleUI(); renderInputTab(); renderPcountSettings(); renderPriceSettings(); renderPinSettings(); }
+    if(currentRole){ currentRole=null; updateRoleUI(); renderInputTab(); renderPcountSettings(); renderPriceSettings(); }
     else { openLogin(null, null); }
   });
 
