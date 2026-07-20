@@ -243,6 +243,7 @@
   </section>
 
   <section id="tab-detail">
+    <div id="detailBody"><div class="empty">一覧から社員をタップしてください</div></div>
     <div class="card" id="thanksCard">
       <h2>💛 ありがとうポイント</h2>
       <p style="font-size:12px;color:var(--dim);margin:0 0 8px;">感謝を伝えたい人をタップしてください（1人1日1回まで）。まずは自分の名前を選んでください。</p>
@@ -250,7 +251,6 @@
       <select id="thanksSender"></select>
       <div id="thanksList" style="margin-top:10px;"></div>
     </div>
-    <div id="detailBody"><div class="empty">一覧から社員をタップしてください</div></div>
   </section>
 
   <section id="tab-team">
@@ -856,7 +856,19 @@ function renderPriceSettings(){
 }
 
 // ---------- pixel avatar ----------
-function drawAvatar(canvas, name, team, job, badge, scale){
+function drawHeart(ctx, cx, topY, size, color){
+  const top = topY + size*0.3;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(cx, top);
+  ctx.bezierCurveTo(cx, topY, cx-size/2, topY, cx-size/2, top);
+  ctx.bezierCurveTo(cx-size/2, topY+size*0.65, cx, topY+size*0.65, cx, topY+size);
+  ctx.bezierCurveTo(cx, topY+size*0.65, cx+size/2, topY+size*0.65, cx+size/2, top);
+  ctx.bezierCurveTo(cx+size/2, topY, cx, topY, cx, top);
+  ctx.closePath();
+  ctx.fill();
+}
+function drawAvatar(canvas, name, team, job, badge, scale, hearts){
   scale = scale || 6;
   const ctx = canvas.getContext('2d');
   const W=9,H=12;
@@ -1010,6 +1022,24 @@ function drawAvatar(canvas, name, team, job, badge, scale){
     ctx.lineWidth = 1;
     ctx.strokeRect(canvas.width-b-1, 1, b, b);
   }
+
+  // もらった「ありがとう」ハート（体に重ねて表示）
+  if(hearts>0){
+    const hSize = scale*1.6;
+    const cx = W*scale/2;
+    const topY = 5.2*scale;
+    drawHeart(ctx, cx, topY, hSize, '#e2564f');
+    ctx.strokeStyle = '#171b24';
+    ctx.lineWidth = Math.max(1, scale*0.12);
+    ctx.stroke();
+    if(hearts>1){
+      ctx.fillStyle = '#fff';
+      ctx.font = `bold ${Math.max(7, Math.round(scale*1.1))}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(hearts>9?'9+':String(hearts), cx, topY+hSize*0.55);
+    }
+  }
 }
 function shade(hex, amt){
   const c = hex.replace('#','');
@@ -1110,7 +1140,7 @@ function renderRoster(){
       <div class="lv">Lv.${jb.lv} ${jb.job}${badge? '　🎖':''}</div>
       <div class="xpbar"><i style="width:${pct}%"></i></div>
     `;
-    drawAvatar(div.querySelector('canvas'), emp.name, emp.team, jb.job, badge, 5);
+    drawAvatar(div.querySelector('canvas'), emp.name, emp.team, jb.job, badge, 5, heartsFor(emp.id));
     div.addEventListener('click', ()=>{ currentDetailId = emp.id; switchTab('detail'); renderDetail(); });
     grid.appendChild(div);
   });
