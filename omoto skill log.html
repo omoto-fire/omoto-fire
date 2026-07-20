@@ -1450,6 +1450,8 @@ async function init(){
     snapshot.forEach(d=> next[d.id] = d.data());
     thanksByDate = next;
     renderThanksList();
+    renderRoster();
+    if(currentDetailId) renderDetail();
   }, (err)=> console.error('thanks onSnapshot error', err));
 
   $$('.tabs button').forEach(b=> b.addEventListener('click', ()=> switchTab(b.dataset.tab)));
