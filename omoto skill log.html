@@ -79,6 +79,9 @@
   .ratio-badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;
     color:#1a1300;background:var(--amber);padding:1px 7px;border-radius:7px;margin:-2px 0 4px;}
   .detail-head .ratio-badge{margin:4px 0 0;}
+  .ratio-row{display:flex;justify-content:center;gap:4px;flex-wrap:wrap;margin:-2px 0 4px;}
+  .ratio-row .ratio-badge{margin:0;padding:1px 5px;}
+  .ratio-badge.tot{background:var(--xp);color:#0f1a08;}
 
   select,input[type=text],input[type=date],input[type=number],textarea{
     width:100%;background:#111522;border:1px solid var(--line);color:var(--cream);
@@ -244,7 +247,7 @@
       <h2>⚔️ 職業と進化（10段階）</h2>
       <p style="font-size:12px;color:var(--dim);line-height:1.8;margin:0 0 8px;">
         毎日の<b style="color:var(--cream)">貢献度％</b>（その日の全体を100%とした自分の割合）がそのまま<b style="color:var(--cream)">経験値（EXP）</b>としてたまります。
-        納期（2日分）を達成した日は<b style="color:var(--cream)">＋2EXP</b>のボーナス。リセットはありません。
+        納期（2日分）を達成した日は<b style="color:var(--cream)">＋2EXP</b>のボーナス。<b style="color:var(--cream)">毎年1月1日に全員Lv.1にリセット</b>されます（12月の賞与の参考）。カードの「累計」は今年の累計、「今月」は今月の貢献度％です。
       </p>
       <div id="jobLadder"></div>
     </div>
@@ -366,12 +369,6 @@
       <p style="font-size:12px;color:var(--dim);margin:0 0 4px;">工程名を1行に1つずつ書きます。</p>
       <textarea id="skillProcEdit" rows="6"></textarea>
       <button class="btn secondary" id="saveSkillProcBtn">工程を保存する</button>
-    </div>
-    <div class="card">
-      <h2>⚔️ 経験値の集計開始日（社長のみ）</h2>
-      <p style="font-size:12px;color:var(--dim);margin:0 0 4px;">この日以降の貢献度％を経験値として数えます。初期値は「データがある最初の日から全部」です。</p>
-      <input type="date" id="xpStartEdit">
-      <button class="btn secondary" id="saveXpStartBtn">開始日を保存する</button>
     </div>
     <div class="card">
       <h2>🏗 単価設定（社長のみ閲覧・編集可）</h2>
@@ -588,7 +585,7 @@ const JOBS = ['','見習い','村人','兵士','剣士','魔法使い','騎士',
 const JOB_ICON = ['','🔰','🌾','🛡','⚔️','🔮','🐎','🥋','📜','🔥','👑'];
 const LV_EXP = [0, 0, 50, 150, 300, 500, 750, 1050, 1450, 2000, 2700]; // Lv.n に必要な累計経験値
 const NOUKI_BONUS = 2; // 納期（2日分）達成日のボーナス
-const DEFAULT_XP_START = '2000-01-01'; // 初期値＝データがある最初の日からすべて数える
+
 const BADGE_COLOR = {};
 
 function dateStrAdd(ds, n){ const d = new Date(ds+'T00:00:00'); d.setDate(d.getDate()+n); return localISO(d); }
@@ -622,7 +619,15 @@ function weeklyPt(name, weekStart){
   }
   return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
 }
-function xpStart(){ return (settings && settings.xpStart) || DEFAULT_XP_START; }
+// 経験値は「その年の1月1日から」数える。毎年1月に全員Lv.1にリセット（12月の賞与の参考にする）
+function xpStart(){ return todayStr().slice(0,4)+'-01-01'; }
+// 今年の累計の貢献度％（全員の合計を100とした割合）
+function ratioYear(name){
+  const start = xpStart();
+  let total=0, mine=0;
+  allPdailyFlat().forEach(e=>{ if(e.date>=start){ total+=e.amount; if(e.employeeName===name) mine+=e.amount; } });
+  return total ? Math.round(mine/total*1000)/10 : null;
+}
 // 累計経験値
 function expOf(emp){
   const start = xpStart();
@@ -1417,7 +1422,7 @@ function renderRoster(){
     div.innerHTML = `
       <div class="team-dot" style="background:${teamColor(emp.team)}"></div>
       <canvas></canvas>
-      <div class="ratio-badge">${ratio!=null ? '今月 '+ratio+'%' : '－'}</div>
+      <div class="ratio-row"><span class="ratio-badge tot">累計 ${ratioYear(emp.name) ?? '－'}%</span><span class="ratio-badge">今月 ${ratio ?? '－'}%</span></div>
       <div class="nm">${escapeHtml(emp.name)}</div>
       <div class="lv">Lv.${jb.lv} ${jb.job}</div>
       <div class="xpbar"><i style="width:${jb.pct}%"></i></div>
@@ -1504,8 +1509,8 @@ function renderDetail(){
         <div class="meta">
           <div class="nm">${escapeHtml(emp.name)}</div>
           <div class="lv">${jb.icon} Lv.${jb.lv} ${jb.job}</div>
-          <div class="team">TEAM ${emp.team}　累計 ${jb.exp} EXP</div>
-          <div class="ratio-badge">${(()=>{const r=ratioFor(emp.name); return r!=null? '今月の貢献度 '+r+'%' : '今月の貢献度 －';})()}</div>
+          <div class="team">TEAM ${emp.team}　今年 ${jb.exp} EXP</div>
+          <div><span class="ratio-badge tot">累計 ${ratioYear(emp.name) ?? '－'}%</span> <span class="ratio-badge">今月 ${ratioFor(emp.name) ?? '－'}%</span></div>
         </div>
       </div>
       <div class="xpbar" style="height:8px;margin-top:12px;"><i style="width:${jb.pct}%"></i></div>
@@ -1627,7 +1632,6 @@ function renderSettings(){
   });
   renderRoleSettings();
   if(skillMap) $('#skillProcEdit').value = skillMap.procs.join('\n');
-  $('#xpStartEdit').value = xpStart();
   $('#pinBoss').value = settings.pins.boss || '';
   $('#pinTeamA').value = settings.pins.teamA || '';
   $('#pinTeamB').value = settings.pins.teamB || '';
@@ -1780,13 +1784,6 @@ async function init(){
     const ok = await storeSet('skillmap', skillMap);
     if(!ok){ alert('保存に失敗しました'); return; }
     renderSkillMap(); showToast('工程を保存しました');
-  }));
-  $('#saveXpStartBtn').addEventListener('click', ()=> requireRole(['boss'], async ()=>{
-    const v = $('#xpStartEdit').value; if(!v) return;
-    settings.xpStart = v;
-    const ok = await storeSet('settings', settings);
-    if(!ok){ alert('保存に失敗しました'); return; }
-    renderRoster(); showToast('開始日を保存しました');
   }));
   $('#nkDate').addEventListener('change', renderNoukiForm);
 
