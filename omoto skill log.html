@@ -369,7 +369,7 @@
     </div>
     <div class="card">
       <h2>⚔️ 経験値の集計開始日（社長のみ）</h2>
-      <p style="font-size:12px;color:var(--dim);margin:0 0 4px;">この日以降の貢献度％を経験値として数えます。初期値は 2026-10-01 です。</p>
+      <p style="font-size:12px;color:var(--dim);margin:0 0 4px;">この日以降の貢献度％を経験値として数えます。初期値は「データがある最初の日から全部」です。</p>
       <input type="date" id="xpStartEdit">
       <button class="btn secondary" id="saveXpStartBtn">開始日を保存する</button>
     </div>
@@ -588,7 +588,7 @@ const JOBS = ['','見習い','村人','兵士','剣士','魔法使い','騎士',
 const JOB_ICON = ['','🔰','🌾','🛡','⚔️','🔮','🐎','🥋','📜','🔥','👑'];
 const LV_EXP = [0, 0, 50, 150, 300, 500, 750, 1050, 1450, 2000, 2700]; // Lv.n に必要な累計経験値
 const NOUKI_BONUS = 2; // 納期（2日分）達成日のボーナス
-const DEFAULT_XP_START = '2026-10-01';
+const DEFAULT_XP_START = '2000-01-01'; // 初期値＝データがある最初の日からすべて数える
 const BADGE_COLOR = {};
 
 function dateStrAdd(ds, n){ const d = new Date(ds+'T00:00:00'); d.setDate(d.getDate()+n); return localISO(d); }
