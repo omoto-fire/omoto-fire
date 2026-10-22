@@ -63,7 +63,7 @@
   .roster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;}
   .emp-card{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:8px 6px 10px;text-align:center;cursor:pointer;position:relative;transition:transform .12s;}
   .emp-card:active{transform:scale(.96);}
-  .emp-card canvas{image-rendering:pixelated;display:block;margin:0 auto 6px;}
+  .emp-card canvas{image-rendering:pixelated;display:block;margin:0 auto 6px;max-width:100%;height:auto;}
   .emp-card .nm{font-size:12px;font-weight:700;color:var(--cream);}
   .emp-card .lv{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--amber);margin-top:2px;}
   .emp-card .team-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;}
@@ -909,12 +909,12 @@ const LOOKS = {
   '都築':  {helmet:'#4d8fd6', build:'big'},
   '杉原':  {helmet:'#7ec850', glasses:true},
   '西崎':  {helmet:'#f0d34a', build:'smallSlim'},
-  '山﨑':  {helmet:'#ff8a3d', hair:'#0d0d0d', longHair:true},
+  '山﨑':  {helmet:'#ff8a3d', hair:'#0d0d0d', midHair:true},
   '雅人':  {helmet:'#c48af0', build:'bigS'},
   '大本汐':{helmet:'#2bb3a6', build:'tallSlim'},
   '都田':  {helmet:'#ff8fb1', build:'slim', glasses:true},
   '恭平':  {helmet:'#5b6b85', skin:'#dba977', hair:'#f0d34a', longHair:true},
-  '岡本':  {helmet:'#8b5a2b', skin:'#a9714f', hair:'#1c1c1c', build:'big', wide:true},
+  '岡本':  {helmet:'#8b5a2b', skin:'#a9714f', hair:'#1c1c1c', build:'big'},
   '尾山':  {helmet:'#9aa4b5', skin:'#e8c9a0', hair:'#e6e6e6', longHair:true, gap:true},
   '伊藤':  {helmet:'#e85f9c', skin:'#f0c9a0', hair:'#f0d34a', longHair:true, skirt:'#e85f9c'},
   '谷本':  {helmet:'#f5f0a0', skin:'#f0c9a0', hair:'#241a12', bob:true, skirt:'#f0d34a'},
@@ -939,170 +939,150 @@ function drawAvatar(canvas, name, team, job, badge, scale, hearts){
   ctx.drawImage(off, Math.round((canvas.width-w)/2), canvas.height-h, w, h);
 }
 function drawAvatarBase(canvas, name, team, job, badge, scale, hearts){
+  // ロブロックス風の四角いキャラ（頭・胴・腕・脚が別パーツ）
+  // レベルが上がるほど腕のポーズが元気になり、表情・装備・演出も豪華になる
   scale = scale || 6;
+  const U = scale, W = 15, H = 15.5;
+  canvas.width = W*U; canvas.height = H*U;
   const ctx = canvas.getContext('2d');
-  const W=9,H=12;
-  canvas.width = W*scale; canvas.height = H*scale;
   ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.save(); ctx.translate(1.5*U, 1.5*U); // 腕や剣を上げても切れないよう上・左右に余白
 
-  const half = [
-    [0,0,1,1,1],
-    [0,1,1,1,1],
-    [0,1,1,1,1],
-    [0,1,1,1,1],
-    [1,1,1,1,1],
-    [1,1,1,1,1],
-    [1,1,1,1,1],
-    [1,1,1,1,1],
-    [0,1,1,1,0],
-    [0,1,1,1,0],
-    [0,1,1,1,0],
-    [0,1,0,1,0]
-  ];
-  const rowRegion = ['hat','hair','face','face','body','body','body','body','legs','legs','legs','legs'];
-
+  const lvNum = Math.max(1, JOBS.indexOf(job));
   const rnd = mulberry32(hashStr(name));
   const SKIN  = ['#e8b98c','#dba977','#c88a5e','#f0c9a0','#d9a06b','#c79a70'];
   const HAIR  = ['#2b2320','#4a2f1c','#171412','#5c4030','#3a2a1a','#6b4a2c'];
   let skin = SKIN[Math.floor(rnd()*SKIN.length)];
   let hair = HAIR[Math.floor(rnd()*HAIR.length)];
-
-  // サポートメンバー従業員は職業コスチュームより先に、個人の外見的特徴を優先する
   const pt = LOOKS[name] || null;
   if(pt){ skin = pt.skin || skin; hair = pt.hair || hair; }
   const helmet = (pt && pt.helmet) || HELMET_FALLBACK[hashStr(name) % HELMET_FALLBACK.length];
 
-  // 職業ごとの装い
   const STYLE = {
-    '見習い':   {hat:'#8b93a7', body:'#9a8f78', legs:'#5f5a50'},
-    '村人':     {hat:'#c9a86a', body:'#8a7a5a', legs:'#5c4a34'},
-    '兵士':     {hat:'#9aa4b5', body:'#6b7688', legs:'#3a3f4c'},
-    '剣士':     {hat:'#4d8fd6', body:'#3c6a9e', legs:'#2b3a52'},
-    '魔法使い': {hat:'#7a5a8c', body:'#5c4a7a', legs:'#453a5c'},
-    '騎士':     {hat:'#c9ccd4', body:'#a9b0bf', legs:'#5b6b85'},
-    '武闘家':   {hat:'#c0392b', body:'#d8d3c2', legs:'#8c3030'},
-    '賢者':     {hat:'#ece7d8', body:'#e9e2c9', legs:'#7ec850'},
-    '英雄':     {hat:'#e0672c', body:'#b8402a', legs:'#3a2a1a'},
-    '勇者':     {hat:'#ffd166', body:'#3f7a72', legs:'#2e4a5c'}
+    '見習い':   {body:'#9a8f78', legs:'#5f5a50'},
+    '村人':     {body:'#8a7a5a', legs:'#5c4a34'},
+    '兵士':     {body:'#6b7688', legs:'#3a3f4c'},
+    '剣士':     {body:'#3c6a9e', legs:'#2b3a52'},
+    '魔法使い': {body:'#5c4a7a', legs:'#453a5c'},
+    '騎士':     {body:'#a9b0bf', legs:'#5b6b85'},
+    '武闘家':   {body:'#d8d3c2', legs:'#8c3030'},
+    '賢者':     {body:'#e9e2c9', legs:'#4f7a3a'},
+    '英雄':     {body:'#b8402a', legs:'#3a2a1a'},
+    '勇者':     {body:'#3f7a72', legs:'#2e4a5c'}
   };
   const st = STYLE[job] || STYLE['見習い'];
-  const legsColor = (pt && pt.skirt) ? pt.skirt : (pt && pt.allBlack) ? '#111111' : st.legs;
-  const hatColor  = (pt && pt.allBlack) ? '#111111' : helmet; // ヘルメットは個人カラー
-  const bodyColor = (pt && pt.allBlack) ? '#181818' : st.body;
+  const black = pt && pt.allBlack;
+  const bodyC = black ? '#181818' : st.body;
+  const legsC = (pt && pt.skirt) ? pt.skirt : black ? '#111111' : st.legs;
+  const helmC = black ? '#111111' : helmet;
 
-  const colorFor = (region)=>{
-    if(region==='hat') return hatColor;
-    if(region==='hair') return (job==='魔法使い' && !(pt&&pt.allBlack)) ? st.hat : hair;
-    if(region==='face') return skin;
-    if(region==='body') return bodyColor;
-    return legsColor;
+  const box = (x,y,w,h,c)=>{
+    ctx.fillStyle = c; ctx.fillRect(x*U, y*U, w*U, h*U);
+    ctx.fillStyle = shade(c,-22); ctx.fillRect((x+w)*U - U*0.18, y*U, U*0.18, h*U); // 右側の影で立体感
   };
 
-  // subtle per-pixel shade variance for texture
-  for(let r=0;r<H;r++){
-    for(let c=0;c<5;c++){
-      if(!half[r][c]) continue;
-      let base = colorFor(rowRegion[r]);
-      const jitter = rnd() < 0.15;
-      const px = (x)=>{ ctx.fillStyle = jitter ? shade(base,-14) : base; ctx.fillRect(x*scale, r*scale, scale, scale); };
-      px(c);
-      const mirrored = W-1-c;
-      if(mirrored!==c) px(mirrored);
+  // 英雄・勇者はマント（体の後ろ）
+  if(lvNum>=9){ ctx.fillStyle = lvNum===10 ? '#c0392b' : '#8c3030'; ctx.fillRect(3.2*U, 5*U, 5.6*U, 6.6*U); }
+
+  // ---- 腕のポーズ（レベルごとに元気になる）----
+  // 角度：0＝下にだらり、90＝真横、180＝真上。[左腕, 右腕]
+  const POSE = {1:[4,4], 2:[14,20], 3:[12,50], 4:[20,80], 5:[30,110], 6:[45,120], 7:[40,160], 8:[140,140], 9:[155,160], 10:[165,172]};
+  const [aL, aR] = POSE[lvNum] || POSE[1];
+  const armW = 1.6, armL = 4.2;
+  const sleeve = black ? '#181818' : shade(bodyC, -10);
+  const drawArm = (sx, ang, side, holdFn)=>{
+    const r = (side==='L' ? 1 : -1) * ang * Math.PI/180;
+    ctx.save();
+    ctx.translate(sx*U, 5.4*U);
+    ctx.rotate(r);
+    ctx.fillStyle = sleeve; ctx.fillRect(-armW/2*U, 0, armW*U, (armL-1.1)*U);
+    ctx.fillStyle = skin;   ctx.fillRect(-armW/2*U, (armL-1.1)*U, armW*U, 1.1*U);
+    ctx.restore();
+    if(holdFn){
+      // 持ち物は手の位置に「まっすぐ上向き」で持たせる
+      const hx = sx - Math.sin(r)*(armL-0.55), hy = 5.4 + Math.cos(r)*(armL-0.55);
+      ctx.save(); ctx.translate(hx*U, hy*U); holdFn(); ctx.restore();
     }
-  }
+  };
+  // 手に持つもの（手の中心が原点。上向きに描く）
+  const stick = (len, color, tip, tipC)=>()=>{
+    ctx.fillStyle = color; ctx.fillRect(-0.25*U, -len*U, 0.5*U, (len+1.2)*U);
+    if(tip){ ctx.fillStyle = tipC; ctx.fillRect(-tip/2*U, (-len-tip+0.2)*U, tip*U, tip*U); }
+  };
+  const sword = (blade, bladeC, guardC)=>()=>{
+    ctx.fillStyle = '#6b4a2c'; ctx.fillRect(-0.25*U, -0.5*U, 0.5*U, 1.1*U);
+    ctx.fillStyle = guardC;    ctx.fillRect(-0.9*U, -0.9*U, 1.8*U, 0.4*U);
+    ctx.fillStyle = bladeC;    ctx.fillRect(-0.3*U, (-0.9-blade)*U, 0.6*U, blade*U);
+    ctx.fillStyle = shade(bladeC,-30); ctx.fillRect(0.05*U, (-0.9-blade)*U, 0.25*U, blade*U);
+  };
+  let rightHold = null, leftHold = null;
+  if(job==='村人')   rightHold = stick(2.2, '#8a6a3a', 1.0, '#9aa4b5');
+  if(job==='兵士')   rightHold = stick(4.2, '#8a6a3a', 0.8, '#d8dce4');
+  if(job==='剣士')   rightHold = sword(3.4, '#e8ecf4', '#8a6a3a');
+  if(job==='魔法使い') rightHold = stick(3.6, '#6b4a2c', 1.3, '#c48af0');
+  if(job==='騎士'){  rightHold = sword(3.6, '#e8ecf4', '#ffd166'); leftHold = ()=>{ ctx.fillStyle='#5b6b85'; ctx.fillRect(-1.3*U,-1.6*U,2.6*U,3*U); ctx.fillStyle='#ffd166'; ctx.fillRect(-0.3*U,-1.2*U,0.6*U,2.2*U); ctx.fillRect(-0.9*U,-0.4*U,1.8*U,0.6*U); }; }
+  if(job==='賢者')   rightHold = stick(4.6, '#c9a86a', 1.4, '#7ec850');
+  if(job==='英雄')   rightHold = sword(4.0, '#ffd166', '#e0a53f');
+  if(job==='勇者')   rightHold = sword(4.6, '#f7fbff', '#ffd166');
+  // 左腕は胴の後ろ側に描く
+  drawArm(2.7, aL, 'L', leftHold);
 
-  // サポートメンバー従業員の個別の特徴付け
-  if(pt && pt.wide){
-    // 岡本：大柄で筋肉質 → 肩・腕を一段広く、力こぶのハイライトを追加
-    ctx.fillStyle = st.body;
-    ctx.fillRect(-0.5*scale, 4*scale, scale, scale*2);
-    ctx.fillRect(8.5*scale, 4*scale, scale, scale*2);
-    ctx.fillStyle = shade(skin, 18);
-    ctx.fillRect(-0.3*scale, 4.3*scale, scale*0.6, scale*0.6);
-    ctx.fillRect(8.7*scale, 4.3*scale, scale*0.6, scale*0.6);
-  }
-  if(pt && pt.longHair){
-    // 伊藤：長い髪が肩の外側まで垂れる
-    ctx.fillStyle = hair;
-    ctx.fillRect(0, 2*scale, scale*0.8, scale*4.5);
-    ctx.fillRect(8.2*scale, 2*scale, scale*0.8, scale*4.5);
-  }
-  if(pt && pt.bob){
-    // 谷本：ボブヘアで耳まで覆う
-    ctx.fillStyle = hair;
-    ctx.fillRect(0, 2*scale, scale, scale*1.3);
-    ctx.fillRect(8*scale, 2*scale, scale, scale*1.3);
-  }
+  // ---- 脚 ----
+  box(3.5, 9, 2.4, 4.2, legsC);
+  box(6.1, 9, 2.4, 4.2, legsC);
+  ctx.fillStyle = '#2a2320'; ctx.fillRect(3.5*U, 12.6*U, 2.4*U, 0.6*U); ctx.fillRect(6.1*U, 12.6*U, 2.4*U, 0.6*U); // 安全靴
 
-  // eyes
+  // ---- 胴 ----
+  box(3.4, 5, 5.2, 4.1, bodyC);
+  if(job==='見習い'){ ctx.fillStyle='#7ec850'; ctx.fillRect(4*U,5.6*U,0.9*U,1.1*U); ctx.fillStyle='#f0d34a'; ctx.fillRect(4.45*U,5.6*U,0.45*U,1.1*U); } // 初心者マーク
+  if(job==='武闘家'){ ctx.fillStyle='#1c1c1c'; ctx.fillRect(3.4*U,7.6*U,5.2*U,0.5*U); }
+  if(job==='騎士'||job==='勇者'){ ctx.fillStyle='#ffd166'; ctx.fillRect(5.6*U,5.4*U,0.8*U,0.8*U); }
+  if(job==='賢者'){ ctx.fillStyle='#7ec850'; ctx.fillRect(5.7*U,5*U,0.6*U,4.1*U); }
+
+  // ---- 頭 ----
+  // 長い髪（頭の後ろ）
+  if(pt && pt.longHair){ ctx.fillStyle = hair; ctx.fillRect(3*U, 2*U, 6*U, 4.2*U); }
+  if(pt && pt.midHair){ ctx.fillStyle = hair; ctx.fillRect(3.1*U, 2*U, 5.8*U, 2.7*U); }
+  box(3.6, 1.6, 4.8, 3.6, skin);
+  ctx.fillStyle = hair; ctx.fillRect(3.6*U, 1.6*U, 4.8*U, 0.6*U);           // 前髪
+  if(pt && pt.bob){ ctx.fillStyle = hair; ctx.fillRect(3.3*U,1.6*U,0.7*U,2*U); ctx.fillRect(8*U,1.6*U,0.7*U,2*U); }
+  // ヘルメット（個人カラー）
+  box(3.3, 0.5, 5.4, 1.3, helmC);
+  ctx.fillStyle = shade(helmC, 30); ctx.fillRect(3.3*U, 1.6*U, 5.4*U, 0.25*U); // つば
+  if(lvNum===10){ ['#fff3b0','#fff3b0','#fff3b0'].forEach((c,i)=>{ ctx.fillStyle=c; ctx.fillRect((3.7+i*1.9)*U, 0.1*U, 0.6*U, 0.5*U); }); }
+
+  // 目
   ctx.fillStyle = '#241a12';
-  ctx.fillRect(3*scale, 3*scale, scale*0.8, scale*0.8);
-  ctx.fillRect(5*scale, 3*scale, scale*0.8, scale*0.8);
+  if(lvNum>=8){ // うれしい目（＾＾）
+    ctx.fillRect(4.4*U, 2.95*U, 0.9*U, 0.3*U); ctx.fillRect(6.6*U, 2.95*U, 0.9*U, 0.3*U);
+  } else {
+    ctx.fillRect(4.5*U, 2.7*U, 0.7*U, 0.8*U); ctx.fillRect(6.7*U, 2.7*U, 0.7*U, 0.8*U);
+  }
   if(pt && pt.glasses){
-    // メガネ：目のまわりに黒ぶちのフレーム＋ブリッジ
-    ctx.strokeStyle = '#111111';
-    ctx.lineWidth = Math.max(1, scale*0.22);
-    ctx.strokeRect(2.65*scale, 2.65*scale, scale*1.5, scale*1.5);
-    ctx.strokeRect(4.85*scale, 2.65*scale, scale*1.5, scale*1.5);
-    ctx.fillStyle = '#111111';
-    ctx.fillRect(4.15*scale, 3.25*scale, scale*0.7, scale*0.22);
+    ctx.strokeStyle = '#111111'; ctx.lineWidth = Math.max(1, U*0.2);
+    ctx.strokeRect(4.1*U, 2.45*U, 1.5*U, 1.3*U); ctx.strokeRect(6.3*U, 2.45*U, 1.5*U, 1.3*U);
+    ctx.fillStyle = '#111111'; ctx.fillRect(5.6*U, 2.95*U, 0.7*U, 0.2*U);
   }
+  // 口（レベルが上がるほど笑顔に）
+  ctx.fillStyle = '#7a3a2a';
+  if(lvNum<=2)      ctx.fillRect(5.4*U, 4.15*U, 1.2*U, 0.25*U);
+  else if(lvNum<=5){ ctx.fillRect(5.1*U, 4.1*U, 1.8*U, 0.25*U); ctx.fillRect(4.9*U, 3.9*U, 0.3*U, 0.3*U); ctx.fillRect(6.8*U, 3.9*U, 0.3*U, 0.3*U); }
+  else { ctx.fillRect(5*U, 3.9*U, 2*U, 0.75*U); ctx.fillStyle = '#ffffff'; ctx.fillRect(5.2*U, 3.9*U, 1.6*U, 0.25*U); }
+  if(pt && pt.gap){ ctx.fillStyle = shade(skin,-40); ctx.fillRect(5.8*U, 3.9*U, 0.4*U, 0.3*U); }
 
-  if(pt && pt.gap){
-    // 尾山：歯が一本ないニッコリ口元
-    ctx.fillStyle = shade(skin,-20);
-    ctx.fillRect(3.3*scale, 4.1*scale, scale*2.4, scale*0.5);
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(3.5*scale, 4.15*scale, scale*0.5, scale*0.4);
-    ctx.fillRect(4.9*scale, 4.15*scale, scale*0.5, scale*0.4);
-    // 中央の歯が抜けている
+  // 右腕は手前に描く（持ち物つき）
+  drawArm(9.3, aR, 'R', rightHold);
+
+  // ---- 演出 ----
+  if(lvNum>=9){ // キラキラ
+    const sp = [[1,1.2],[10.6,2.2],[0.8,8],[11,9.5],[10,0.4]];
+    ctx.fillStyle = lvNum===10 ? '#ffd166' : '#fff3b0';
+    sp.forEach(([x,y],i)=>{ if(i<(lvNum===10?5:3)){ ctx.fillRect((x-0.15)*U,(y-0.5)*U,0.3*U,1.3*U); ctx.fillRect((x-0.65)*U,y*U,1.3*U,0.3*U); } });
   }
-
-  // 職業ごとの小物（レベルが上がるほど装備が豪華になる）
-  const prop = (x,y,w,h,c)=>{ ctx.fillStyle=c; ctx.fillRect(x*scale, y*scale, w*scale, h*scale); };
-  if(job==='見習い'){ prop(0.4,5,0.6,0.6,'#f0d34a'); }
-  if(job==='村人'){ prop(0.4,5,0.6,3,'#8a6a3a'); }
-  if(job==='兵士'){ prop(0.4,2.4,0.6,0.9,'#c9ccd4'); prop(0.4,3.3,0.6,4.5,'#8a6a3a'); }
-  if(job==='剣士'){ prop(0.4,2.2,0.6,3.2,'#e8ecf4'); prop(0,5.4,1.4,0.6,'#8a6a3a'); }
-  if(job==='魔法使い'){ prop(0.4,3.6,0.6,4.4,'#8a6a3a'); prop(0.2,2.8,1,0.9,'#c48af0'); }
-  if(job==='騎士'){ prop(0.4,2.2,0.6,3.2,'#e8ecf4'); prop(7.6,4.2,1.4,2.4,'#5b6b85'); prop(7.9,4.6,0.8,1.6,'#ffd166'); }
-  if(job==='武闘家'){ prop(0.2,5.4,0.8,0.8,skin); prop(W-1+0.1,5.4,0.8,0.8,skin); prop(2,4.4,5,0.4,'#1c1c1c'); }
-  if(job==='賢者'){ prop(0.4,2.6,0.6,5.4,'#c9a86a'); prop(0.1,1.8,1.2,1,'#7ec850'); }
-  if(job==='英雄'){ prop(0.4,2.2,0.6,3.2,'#ffd166'); prop(0,5.4,1.4,0.6,'#e0a53f'); prop(1,4,0.6,4,'#b8402a'); prop(7.4,4,0.6,4,'#b8402a'); }
-  if(job==='勇者'){
-    prop(0.4,2.2,0.6,3.2,'#e8ecf4'); prop(0,5.4,1.4,0.6,'#e0a53f');
-    prop(2.2,0,0.6,0.6,'#fff3b0'); prop(4.2,0,0.6,0.6,'#fff3b0'); prop(6.2,0,0.6,0.6,'#fff3b0');
-    ctx.strokeStyle = '#ffd166';
-    ctx.lineWidth = Math.max(1, scale*0.18);
+  ctx.restore();
+  if(lvNum===10){
+    ctx.strokeStyle = '#ffd166'; ctx.lineWidth = Math.max(1, U*0.18);
     ctx.strokeRect(0.5, 0.5, canvas.width-1, canvas.height-1);
-  }
-
-  // 先月のバッチ（右上）
-  if(badge && BADGE_COLOR[badge]){
-    const b = scale*1.6;
-    ctx.fillStyle = BADGE_COLOR[badge];
-    ctx.fillRect(canvas.width-b-1, 1, b, b);
-    ctx.strokeStyle = '#171b24';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(canvas.width-b-1, 1, b, b);
-  }
-
-  // もらった「ありがとう」ハート（体に重ねて表示）
-  if(hearts>0){
-    const hSize = scale*1.6;
-    const cx = W*scale/2;
-    const topY = 5.2*scale;
-    drawHeart(ctx, cx, topY, hSize, '#e2564f');
-    ctx.strokeStyle = '#171b24';
-    ctx.lineWidth = Math.max(1, scale*0.12);
-    ctx.stroke();
-    if(hearts>1){
-      ctx.fillStyle = '#fff';
-      ctx.font = `bold ${Math.max(7, Math.round(scale*1.1))}px sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(hearts>9?'9+':String(hearts), cx, topY+hSize*0.55);
-    }
   }
 }
 function shade(hex, amt){
