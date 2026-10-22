@@ -69,6 +69,13 @@
   .emp-card .team-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;}
   .xpbar{height:5px;background:#111522;border-radius:3px;overflow:hidden;margin-top:5px;}
   .xpbar i{display:block;height:100%;background:linear-gradient(90deg,var(--xp),#a6e07f);}
+  .ladder{display:flex;flex-direction:column;gap:4px;}
+  .rung{display:grid;grid-template-columns:26px 44px 1fr auto;align-items:center;gap:6px;background:#111522;border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:13px;color:var(--dim);}
+  .rung .lvn{font-family:'JetBrains Mono',monospace;font-size:11px;}
+  .rung .need{font-family:'JetBrains Mono',monospace;font-size:10px;}
+  .rung.done{color:var(--cream);}
+  .rung.now{color:#1a1300;background:var(--amber);border-color:var(--amber);font-weight:700;}
+  .tonext{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--dim);margin-top:3px;}
   .ratio-badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;
     color:#1a1300;background:var(--amber);padding:1px 7px;border-radius:7px;margin:-2px 0 4px;}
   .detail-head .ratio-badge{margin:4px 0 0;}
@@ -121,13 +128,51 @@
   .price-row button{background:none;border:none;color:var(--danger);height:36px;font-size:15px;cursor:pointer;}
   .price-addbtn{margin-top:10px;background:var(--panel-2);color:var(--cream);border:1px dashed var(--line);border-radius:8px;padding:8px;font-size:12px;width:100%;cursor:pointer;}
 
-  .thanks-row{display:flex;align-items:center;gap:8px;background:#111522;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:6px;}
-  .thanks-row .nm{font-size:13px;font-weight:700;flex:0 0 92px;}
-  .thanks-hearts{font-size:13px;color:var(--danger);letter-spacing:1px;flex:1;overflow-wrap:anywhere;}
-  .thanks-btn{background:var(--panel-2);border:1px solid var(--line);color:var(--cream);border-radius:8px;padding:7px 10px;font-size:14px;cursor:pointer;flex:0 0 auto;}
-  .thanks-btn.sent{background:var(--danger);color:#fff;border-color:var(--danger);}
-  .thanks-btn:disabled{opacity:.4;cursor:not-allowed;}
 
+  .miss-card{border-color:var(--danger);background:linear-gradient(180deg,#2c1f24,#221c26);}
+  .miss-card.ok{border-color:var(--xp);background:var(--panel);}
+  .miss-chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .miss-chip{background:#111522;border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-size:13px;}
+  .miss-chip b{color:var(--danger);font-family:'JetBrains Mono',monospace;margin-left:4px;}
+  .meter-big{display:flex;align-items:baseline;gap:8px;margin:2px 0 8px;}
+  .meter-big .num{font-family:'JetBrains Mono',monospace;font-size:34px;font-weight:700;color:var(--cream);}
+  .meter-big .den{font-family:'JetBrains Mono',monospace;font-size:16px;color:var(--dim);}
+  .meter-big .pc{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;}
+  .meter{height:16px;background:#111522;border:1px solid var(--line);border-radius:9px;overflow:hidden;}
+  .meter i{display:block;height:100%;transition:width .4s;}
+  .who{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;}
+  .who span{font-size:12px;padding:3px 8px;border-radius:6px;background:#111522;border:1px solid var(--line);}
+  .who span.y{color:var(--xp);border-color:#3f5f2f;}
+  .who span.n{color:var(--danger);border-color:#5f2f2f;}
+  .week7{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:12px;}
+  .week7 div{text-align:center;font-size:10px;color:var(--dim);}
+  .week7 .bar{height:34px;background:#111522;border:1px solid var(--line);border-radius:4px;display:flex;align-items:flex-end;overflow:hidden;margin-bottom:3px;}
+  .week7 .bar i{display:block;width:100%;}
+  .nk-head{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .nk-list{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px;}
+  .nk-item{display:flex;align-items:center;gap:8px;background:#111522;border:1px solid var(--line);border-radius:8px;padding:10px;font-size:14px;cursor:pointer;user-select:none;}
+  .nk-item input{width:22px;height:22px;accent-color:var(--xp);margin:0;flex:0 0 auto;}
+  .nk-item.on{border-color:var(--xp);background:#18241a;}
+  .role-card .holder{font-size:12px;color:var(--dim);font-weight:400;margin-left:auto;}
+  .role-prog{display:flex;align-items:center;gap:8px;margin:2px 0 10px;}
+  .role-prog .meter{flex:1;height:10px;}
+  .role-prog b{font-family:'JetBrains Mono',monospace;font-size:13px;}
+  .when-h{font-size:11px;color:var(--amber);letter-spacing:1px;margin:10px 0 4px;font-weight:700;}
+  .ms-item{display:flex;align-items:flex-start;gap:10px;background:#111522;border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:6px;font-size:14px;line-height:1.5;cursor:pointer;user-select:none;}
+  .ms-item input{width:22px;height:22px;accent-color:var(--xp);margin:0;flex:0 0 auto;}
+  .ms-item.on{border-color:var(--xp);background:#18241a;color:var(--dim);text-decoration:line-through;}
+  .ms-week{font-size:11px;color:var(--dim);margin-top:8px;}
+  .role-edit{border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:10px;background:#141926;}
+  .role-edit .rl{font-weight:900;margin-bottom:6px;}
+  .skill-wrap{overflow-x:auto;}
+  table.skill{border-collapse:collapse;width:100%;font-size:12px;}
+  table.skill th, table.skill td{border:1px solid var(--line);padding:6px 4px;text-align:center;white-space:nowrap;}
+  table.skill th{color:var(--dim);font-weight:700;background:#141926;}
+  table.skill td.nm{text-align:left;font-weight:700;color:var(--cream);position:sticky;left:0;background:var(--panel);}
+  table.skill td.cell{cursor:pointer;color:var(--gold);min-width:44px;}
+  table.skill td.cell.z{color:#3a4356;}
+  table.skill tr.sum td{font-size:11px;color:var(--dim);}
+  table.skill tr.sum td.warn{color:var(--danger);font-weight:700;}
   .radarwrap,.chartwrap{display:flex;justify-content:center;margin:8px 0;}
 
   .legend{display:flex;gap:14px;justify-content:center;font-size:11px;color:var(--dim);margin-top:4px;}
@@ -167,29 +212,59 @@
 
   <nav class="tabs">
     <button data-tab="roster" class="active">一覧</button>
+    <button data-tab="mission">役職</button>
     <button data-tab="input">記録</button>
     <button data-tab="pcount">P数</button>
     <button data-tab="detail">個人</button>
+    <button data-tab="skill">スキル</button>
     <button data-tab="team">チーム</button>
     <button data-tab="comment">コメント</button>
     <button data-tab="settings">設定</button>
   </nav>
 
   <section id="tab-roster" class="active">
+    <div class="card miss-card" id="noukiAlert"></div>
+    <div class="card" id="noukiMeter"></div>
+    <div class="card">
+      <h2>✅ 今日の納期（2日分）はできましたか？</h2>
+      <p style="font-size:12px;color:var(--dim);margin:0 0 6px;">日直が全員分をチェックして保存してください。チェックが付いていない人は「未達成」として数えます。</p>
+      <div class="nk-head">
+        <div><label class="f">日付</label><input type="date" id="nkDate"></div>
+        <div><label class="f">今日の日直</label><select id="nkDuty"></select></div>
+      </div>
+      <div id="nkList" class="nk-list"></div>
+      <div id="nkSaved" style="font-size:11px;color:var(--dim);margin-top:6px;"></div>
+      <button class="btn" id="nkSaveBtn">✓ チェックを保存する</button>
+    </div>
     <div class="card">
       <h2>👷 社員一覧</h2>
       <div id="rosterGrid" class="roster-grid"></div>
     </div>
     <div class="card">
-      <h2>⚔️ 職業と進化条件</h2>
-      <p style="font-size:12px;color:var(--dim);line-height:1.9;margin:0;">
-        進化判定は<b style="color:var(--cream)">1週間を終えた次の月曜日</b>。月が変わると全員Lv.1（農民）にリセットされ、先月の最終職業がバッチ（右上の■）として残ります。<br>
-        🌾 <b style="color:var(--cream)">農民 Lv.1</b> … 初期状態<br>
-        ⚔️ <b style="color:var(--cream)">兵士 Lv.2</b> … 貢献度の週平均が10ptを超える（先月＝緑バッチ）<br>
-        🔮 <b style="color:var(--cream)">魔法使い Lv.3</b> … 能力ステータスが全社平均以上（先月＝赤バッチ）<br>
-        🥋 <b style="color:var(--cream)">武闘家 Lv.4</b> … ステータスは平均未満でも貢献度の週平均20pt以上（先月＝青バッチ）<br>
-        🗡 <b style="color:var(--cream)">勇者 Lv.5</b> … ステータス2週連続で平均超え ＋ 貢献度30pt超え（先月＝金バッチ）
+      <h2>⚔️ 職業と進化（10段階）</h2>
+      <p style="font-size:12px;color:var(--dim);line-height:1.8;margin:0 0 8px;">
+        毎日の<b style="color:var(--cream)">貢献度％</b>（その日の全体を100%とした自分の割合）がそのまま<b style="color:var(--cream)">経験値（EXP）</b>としてたまります。
+        納期（2日分）を達成した日は<b style="color:var(--cream)">＋2EXP</b>のボーナス。リセットはありません。
       </p>
+      <div id="jobLadder"></div>
+    </div>
+  </section>
+
+  <section id="tab-mission">
+    <div class="card">
+      <h2>🎖 役職ミッションボード</h2>
+      <p style="font-size:12px;color:var(--dim);margin:0 0 8px;">部長・課長・主任の「今日やること」です。終わったら担当者が自分でチェックします。全員が見られるので、誰が何を任されているかが一目でわかります。</p>
+      <label class="f">日付</label>
+      <input type="date" id="msDate">
+    </div>
+    <div id="missionBody"></div>
+  </section>
+
+  <section id="tab-skill">
+    <div class="card">
+      <h2>🧰 多能工スキルマップ（試験運用）</h2>
+      <p style="font-size:12px;color:var(--dim);margin:0 0 8px;">誰がどの工程をできるかの一覧です。★1＝補助があればできる、★2＝一人でできる、★3＝人に教えられる。マスをタップすると★が変わります（社長・リーダーのみ。ログインが必要です）。</p>
+      <div id="skillBody"></div>
     </div>
   </section>
 
@@ -244,13 +319,6 @@
 
   <section id="tab-detail">
     <div id="detailBody"><div class="empty">一覧から社員をタップしてください</div></div>
-    <div class="card" id="thanksCard">
-      <h2>💛 ありがとうポイント</h2>
-      <p style="font-size:12px;color:var(--dim);margin:0 0 8px;">感謝を伝えたい人をタップしてください（1人1日1回まで）。まずは自分の名前を選んでください。</p>
-      <label class="f">あなたのお名前</label>
-      <select id="thanksSender"></select>
-      <div id="thanksList" style="margin-top:10px;"></div>
-    </div>
   </section>
 
   <section id="tab-team">
@@ -286,6 +354,24 @@
       <h2>⚙️ 社員登録</h2>
       <div id="empEditList"></div>
       <button class="btn secondary" id="addEmpBtn">＋ 社員を追加</button>
+    </div>
+    <div class="card">
+      <h2>🎖 役職ミッションの設定（社長のみ）</h2>
+      <p style="font-size:12px;color:var(--dim);margin:0 0 4px;">担当者名と、毎日のやることを1行に1つずつ書きます。行の先頭に「朝礼:」「日中:」「終礼:」を付けると、時間帯ごとに分けて表示されます。</p>
+      <div id="roleEditList"></div>
+      <button class="btn secondary" id="saveRolesBtn">役職ミッションを保存する</button>
+    </div>
+    <div class="card">
+      <h2>🧰 スキルマップの工程（社長のみ）</h2>
+      <p style="font-size:12px;color:var(--dim);margin:0 0 4px;">工程名を1行に1つずつ書きます。</p>
+      <textarea id="skillProcEdit" rows="6"></textarea>
+      <button class="btn secondary" id="saveSkillProcBtn">工程を保存する</button>
+    </div>
+    <div class="card">
+      <h2>⚔️ 経験値の集計開始日（社長のみ）</h2>
+      <p style="font-size:12px;color:var(--dim);margin:0 0 4px;">この日以降の貢献度％を経験値として数えます。初期値は 2026-10-01 です。</p>
+      <input type="date" id="xpStartEdit">
+      <button class="btn secondary" id="saveXpStartBtn">開始日を保存する</button>
     </div>
     <div class="card">
       <h2>🏗 単価設定（社長のみ閲覧・編集可）</h2>
@@ -377,7 +463,10 @@ let settings = {pins:{boss:'0000', teamA:'1111', teamB:'2222'}};
 let logsByMonth = {}; // 'YYYY-MM' -> array of ability-score entries
 let priceSettings = {}; // { employeeName: [{id, site, category, price}] }
 let pdaily = {}; // 'YYYY-MM' -> array of {id, employeeName, date, site, category, price, p, amount}
-let thanksByDate = {}; // 'YYYY-MM-DD' -> { senderId: recipientId }
+let noukiByDate = {}; // 'YYYY-MM-DD' -> { checks:{empId:true|false}, by:'日直の名前' }
+let missionsByDate = {}; // 'YYYY-MM-DD' -> { roleKey: {itemIndex:true} }
+let rolesConfig = null; // 役職ミッションの設定
+let skillMap = null; // 多能工スキルマップ
 let currentDetailId = null;
 let currentRole = null; // 'boss' | 'teamA' | 'teamB' | null
 let pendingScores = {};
@@ -389,8 +478,13 @@ const ROLE_TEAM = {boss:null, teamA:'A', teamB:'B'};
 
 const $ = (s,el)=> (el||document).querySelector(s);
 const $$ = (s,el)=> Array.from((el||document).querySelectorAll(s));
-const todayStr = ()=> new Date().toISOString().slice(0,10);
+// 日付はすべて「日本の端末のローカル日付」で扱う（toISOString はUTCのため朝9時前に前日になってしまう）
+const pad2 = (n)=> String(n).padStart(2,'0');
+const localISO = (d)=> d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
+const todayStr = ()=> localISO(new Date());
 const monthOf = (d)=> d.slice(0,7);
+const WEEKDAY = ['日','月','火','水','木','金','土'];
+const prettyDate = (ds)=>{ const d = new Date(ds+'T00:00:00'); return (d.getMonth()+1)+'/'+d.getDate()+'('+WEEKDAY[d.getDay()]+')'; };
 const uid = ()=> 'x'+Math.random().toString(36).slice(2,10);
 
 function empIdByName(name){ const e = employees.find(x=>x.name===name); return e ? e.id : null; }
@@ -469,6 +563,7 @@ function rebuildPdailyFromSnapshot(snapshot){
     });
   });
   pdaily = next;
+  dayTotalCache = null;
 }
 
 function hashStr(s){
@@ -485,24 +580,38 @@ function mulberry32(a){
   };
 }
 
-// ---------- 職業（月次ジョブ）システム ----------
-// 農民→兵士→魔法使い→武闘家→勇者。判定は「1週間終えた次の月曜日」＝完了した週のデータのみで行う。
-// 月が変わるとLv1（農民）にリセット。先月の最終職業はバッチとしてドット絵に残る。
-const JOBS = ['','農民','兵士','魔法使い','武闘家','勇者'];
-const BADGE_COLOR = {'勇者':'#ffd166','武闘家':'#4d8fd6','魔法使い':'#e2564f','兵士':'#7ec850'};
+// ---------- 10段階進化（経験値方式） ----------
+// 毎日の貢献度％（その日の全体を100とした自分の割合）を経験値としてためていく。
+// 働いた日は必ず増えるので、少しずつ進化が見える。金額は一切表示しない。
+// ＋ 納期（2日分）を達成した日はボーナス経験値。
+const JOBS = ['','見習い','村人','兵士','剣士','魔法使い','騎士','武闘家','賢者','英雄','勇者'];
+const JOB_ICON = ['','🔰','🌾','🛡','⚔️','🔮','🐎','🥋','📜','🔥','👑'];
+const LV_EXP = [0, 0, 50, 150, 300, 500, 750, 1050, 1450, 2000, 2700]; // Lv.n に必要な累計経験値
+const NOUKI_BONUS = 2; // 納期（2日分）達成日のボーナス
+const DEFAULT_XP_START = '2026-10-01';
+const BADGE_COLOR = {};
 
-function dateStrAdd(ds, n){ const d = new Date(ds+'T00:00:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
-function mondayOf(ds){ const d = new Date(ds+'T00:00:00'); const off = (d.getDay()+6)%7; d.setDate(d.getDate()-off); return d.toISOString().slice(0,10); }
+function dateStrAdd(ds, n){ const d = new Date(ds+'T00:00:00'); d.setDate(d.getDate()+n); return localISO(d); }
+function mondayOf(ds){ const d = new Date(ds+'T00:00:00'); const off = (d.getDay()+6)%7; d.setDate(d.getDate()-off); return localISO(d); }
 
+// 日付ごとの全体金額（計算を速くするためのキャッシュ。pdata更新時に作り直す）
+let dayTotalCache = null;
+function dayTotals(){
+  if(dayTotalCache) return dayTotalCache;
+  const tot = {}, mine = {};
+  allPdailyFlat().forEach(e=>{
+    tot[e.date] = (tot[e.date]||0) + e.amount;
+    const k = e.date+'|'+e.employeeName;
+    mine[k] = (mine[k]||0) + e.amount;
+  });
+  dayTotalCache = {tot, mine};
+  return dayTotalCache;
+}
 // その日の貢献度pt（全体を100とした比率）
 function dailyPt(name, ds){
-  const mk = monthOf(ds);
-  const rows = (pdaily[mk]||[]).filter(e=>e.date===ds);
-  if(!rows.length) return null;
-  const total = rows.reduce((s,e)=>s+e.amount,0);
-  if(!total) return null;
-  const mine = rows.filter(e=>e.employeeName===name).reduce((s,e)=>s+e.amount,0);
-  return (mine/total)*100;
+  const {tot, mine} = dayTotals();
+  if(!tot[ds]) return null;
+  return ((mine[ds+'|'+name]||0)/tot[ds])*100;
 }
 // 週（月曜開始）の貢献度平均
 function weeklyPt(name, weekStart){
@@ -513,64 +622,42 @@ function weeklyPt(name, weekStart){
   }
   return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
 }
-// 週内のステータス（能力スコア）平均が全社平均以上か
-function weeklyStatusHigh(empId, weekStart){
-  const weekEnd = dateStrAdd(weekStart,6);
-  const inWeek = (l)=> l.date>=weekStart && l.date<=weekEnd;
-  const avgOf = (id)=>{
-    const vals = [];
-    allLogsFlat().filter(l=>l.employeeId===id && inWeek(l)).forEach(l=>{
-      CATS.forEach(c=>{ const v=l.scores[c.key]; if(v>0) vals.push(v); });
-    });
-    return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
-  };
-  const mine = avgOf(empId);
-  if(mine===null) return false;
-  const others = employees.map(e=>avgOf(e.id)).filter(v=>v!==null);
-  if(!others.length) return false;
-  const companyAvg = others.reduce((a,b)=>a+b,0)/others.length;
-  return mine >= companyAvg;
+function xpStart(){ return (settings && settings.xpStart) || DEFAULT_XP_START; }
+// 累計経験値
+function expOf(emp){
+  const start = xpStart();
+  const {tot} = dayTotals();
+  let exp = 0;
+  Object.keys(tot).forEach(ds=>{ if(ds>=start){ exp += dailyPt(emp.name, ds)||0; } });
+  Object.keys(noukiByDate).forEach(ds=>{
+    if(ds>=start){ const c = (noukiByDate[ds].checks||{})[emp.id]; if(c===true) exp += NOUKI_BONUS; }
+  });
+  return Math.floor(exp);
 }
-// 指定月のうち「完了した週」（日曜終了がasOfより前 かつ 月内）のリスト
-function completedWeeks(monthKey, asOf){
-  const first = monthKey+'-01';
-  let ws = mondayOf(first);
-  const out = [];
-  for(let i=0;i<6;i++){
-    const we = dateStrAdd(ws,6);
-    if(monthOf(we)===monthKey && we < asOf) out.push(ws);
-    ws = dateStrAdd(ws,7);
-    if(ws > asOf) break;
-  }
-  return out;
+function levelInfo(emp){
+  const exp = expOf(emp);
+  let lv = 1;
+  for(let n=10;n>=1;n--){ if(exp>=LV_EXP[n]){ lv=n; break; } }
+  const cur = LV_EXP[lv], next = lv<10 ? LV_EXP[lv+1] : null;
+  const pct = next ? Math.round(((exp-cur)/(next-cur))*100) : 100;
+  return {lv, job:JOBS[lv], icon:JOB_ICON[lv], exp, next, toNext: next? next-exp : 0, pct};
 }
-// 職業判定
-function jobForMonth(emp, monthKey, asOf){
-  const weeks = completedWeeks(monthKey, asOf);
-  if(!weeks.length) return {lv:1, job:'農民'};
-  const lastW = weeks[weeks.length-1];
-  const pt = weeklyPt(emp.name, lastW) ?? 0;
-  const sHigh = weeklyStatusHigh(emp.id, lastW);
-  const sHighPrev = weeks.length>=2 ? weeklyStatusHigh(emp.id, weeks[weeks.length-2]) : false;
-  if(sHigh && sHighPrev && pt>30) return {lv:5, job:'勇者'};
-  if(!sHigh && pt>=20) return {lv:4, job:'武闘家'};
-  if(sHigh) return {lv:3, job:'魔法使い'};
-  if(pt>10) return {lv:2, job:'兵士'};
-  return {lv:1, job:'農民'};
-}
-function currentJob(emp){
-  const today = todayStr();
-  return jobForMonth(emp, today.slice(0,7), today);
-}
-// 先月の最終職業（バッチ）
-function badgeFor(emp){
-  const today = todayStr();
-  const d = new Date(today+'T00:00:00'); d.setDate(1);
-  const firstOfMonth = d.toISOString().slice(0,10);
-  d.setMonth(d.getMonth()-1);
-  const prevMonth = d.toISOString().slice(0,7);
-  const j = jobForMonth(emp, prevMonth, firstOfMonth);
-  return j.job!=='農民' ? j.job : null;
+function currentJob(emp){ return levelInfo(emp); }
+function badgeFor(emp){ return null; }
+
+// レベルアップ演出（端末ごとに「前回見たレベル」を覚えておき、上がっていたらお知らせ）
+function checkLevelUps(){
+  let seen = {};
+  try{ seen = JSON.parse(localStorage.getItem('skilllog_seenLv')||'{}'); }catch(e){}
+  const first = !Object.keys(seen).length;
+  const ups = [];
+  employees.forEach(emp=>{
+    const li = levelInfo(emp);
+    if(!first && seen[emp.id] && li.lv > seen[emp.id]) ups.push(emp.name+' が Lv.'+li.lv+' '+li.job+' に進化！');
+    seen[emp.id] = li.lv;
+  });
+  try{ localStorage.setItem('skilllog_seenLv', JSON.stringify(seen)); }catch(e){}
+  ups.forEach((m,i)=> setTimeout(()=> showToast('🎉 '+m), i*2400));
 }
 
 // ---------- 金曜のひとことコメント（ルールベースの自動生成・LLM呼び出しではない） ----------
@@ -598,14 +685,11 @@ function generateComment(emp){
   }
 
   const parts = [];
-  const JOB_LINE = {
-    '勇者':   `${emp.name}さんは今週も勇者クラス。安定した強さが際立っています`,
-    '武闘家': `${emp.name}さんは貢献度で武闘家クラスに到達。数字でしっかり結果を出しています`,
-    '魔法使い': `${emp.name}さんは能力評価で魔法使いクラス。丁寧な仕事ぶりが評価に表れています`,
-    '兵士':   `${emp.name}さんは兵士クラス。着実にペースをつかめています`,
-    '農民':   `${emp.name}さんは今週まだ農民クラス。次の一歩を後押ししたいところです`
-  };
-  parts.push(JOB_LINE[jb.job] || `${emp.name}さんは今週も一つずつ積み上げています`);
+  if(jb.lv>=9) parts.push(`${emp.name}さんはLv.${jb.lv} ${jb.job}。安定した強さが際立っています`);
+  else if(jb.lv>=6) parts.push(`${emp.name}さんはLv.${jb.lv} ${jb.job}。数字でしっかり結果を出しています`);
+  else if(jb.lv>=3) parts.push(`${emp.name}さんはLv.${jb.lv} ${jb.job}。着実にペースをつかめています`);
+  else parts.push(`${emp.name}さんはLv.${jb.lv} ${jb.job}。次の一歩を後押ししたいところです`);
+  if(jb.next) parts.push(`次の${JOBS[jb.lv+1]}まであと${jb.toNext}EXP`);
   if(best) parts.push(`${best.label}が強み`);
   if(worst && worst.key!==(best&&best.key)) parts.push(`${worst.label}は伸びしろ`);
   if(trend) parts.push(`貢献度は${trend}`);
@@ -685,57 +769,6 @@ function ratioFor(name){
   const mine = monthlyAmount(name, m);
   return Math.round((mine/total)*1000)/10;
 }
-// ---------- ありがとうポイント ----------
-function allThanksFlat(){
-  let out = [];
-  Object.keys(thanksByDate).forEach(date=>{
-    const day = thanksByDate[date]||{};
-    Object.keys(day).forEach(senderId=> out.push({date, senderId, recipientId: day[senderId]}));
-  });
-  return out;
-}
-function heartsFor(empId){ return allThanksFlat().filter(t=>t.recipientId===empId).length; }
-async function writeThanksDay(date, senderId, recipientId){
-  try{ await setDoc(doc(db,'thanks',date), {[senderId]: recipientId}, {merge:true}); return true; }
-  catch(e){ console.error('writeThanksDay failed', e); return false; }
-}
-function renderThanks(){
-  const senderSel = $('#thanksSender');
-  if(!senderSel) return;
-  const prevSender = senderSel.value;
-  senderSel.innerHTML = employees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('') || '<option value="">社員未登録</option>';
-  if(prevSender && employees.some(e=>e.id===prevSender)) senderSel.value = prevSender;
-  renderThanksList();
-}
-function renderThanksList(){
-  const senderId = $('#thanksSender').value;
-  const today = todayStr();
-  const sentTo = (thanksByDate[today]||{})[senderId];
-  const list = $('#thanksList');
-  list.innerHTML = employees.filter(e=>e.id!==senderId).map(e=>{
-    const hearts = '♥'.repeat(heartsFor(e.id));
-    const isTarget = sentTo===e.id;
-    const disabled = !!sentTo && !isTarget;
-    return `<div class="thanks-row">
-      <div class="nm">${escapeHtml(e.name)}</div>
-      <div class="thanks-hearts">${hearts||'－'}</div>
-      <button class="thanks-btn ${isTarget?'sent':''}" data-id="${e.id}" ${disabled?'disabled':''}>${isTarget?'♥ 送信済み':'♥ 送る'}</button>
-    </div>`;
-  }).join('') || '<div class="empty">社員未登録</div>';
-  $$('.thanks-btn', list).forEach(btn=>{
-    btn.addEventListener('click', async ()=>{
-      const recipientId = btn.dataset.id;
-      const senderId2 = $('#thanksSender').value;
-      if(!senderId2){ alert('あなたのお名前を選択してください'); return; }
-      const today2 = todayStr();
-      if((thanksByDate[today2]||{})[senderId2]){ alert('今日はすでにありがとうを送っています（1日1回まで）'); return; }
-      const ok = await writeThanksDay(today2, senderId2, recipientId);
-      if(!ok){ alert('保存に失敗しました。通信状況を確認してください。'); return; }
-      showToast('ありがとうを送りました💛');
-    });
-  });
-}
-
 function renderPcountSettings(){
   const empSel = $('#pcEmployee');
   const team = ROLE_TEAM[currentRole];
@@ -911,13 +944,18 @@ function drawAvatar(canvas, name, team, job, badge, scale, hearts){
 
   // 職業ごとの装い
   const STYLE = {
-    '農民':     {hat:'#c9a86a', body:'#8a7a5a', legs:'#5c4a34'},
+    '見習い':   {hat:'#8b93a7', body:'#9a8f78', legs:'#5f5a50'},
+    '村人':     {hat:'#c9a86a', body:'#8a7a5a', legs:'#5c4a34'},
     '兵士':     {hat:'#9aa4b5', body:'#6b7688', legs:'#3a3f4c'},
+    '剣士':     {hat:'#4d8fd6', body:'#3c6a9e', legs:'#2b3a52'},
     '魔法使い': {hat:'#7a5a8c', body:'#5c4a7a', legs:'#453a5c'},
+    '騎士':     {hat:'#c9ccd4', body:'#a9b0bf', legs:'#5b6b85'},
     '武闘家':   {hat:'#c0392b', body:'#d8d3c2', legs:'#8c3030'},
+    '賢者':     {hat:'#ece7d8', body:'#e9e2c9', legs:'#7ec850'},
+    '英雄':     {hat:'#e0672c', body:'#b8402a', legs:'#3a2a1a'},
     '勇者':     {hat:'#ffd166', body:'#3f7a72', legs:'#2e4a5c'}
   };
-  const st = STYLE[job] || STYLE['農民'];
+  const st = STYLE[job] || STYLE['見習い'];
   const legsColor = (pt && pt.skirt) ? pt.skirt : (pt && pt.allBlack) ? '#111111' : st.legs;
   const hatColor  = (pt && pt.allBlack) ? '#111111' : st.hat;
   const bodyColor = (pt && pt.allBlack) ? '#181818' : st.body;
@@ -981,33 +1019,20 @@ function drawAvatar(canvas, name, team, job, badge, scale, hearts){
     // 中央の歯が抜けている
   }
 
-  // 職業ごとの小物
-  if(job==='農民'){
-    ctx.fillStyle = '#8a6a3a';
-    ctx.fillRect(0.4*scale, 5*scale, scale*0.6, scale*3);
-  }
-  if(job==='兵士'){
-    ctx.fillStyle = '#c9ccd4';
-    ctx.fillRect(0.4*scale, 2.4*scale, scale*0.6, scale*0.9);
-    ctx.fillStyle = '#8a6a3a';
-    ctx.fillRect(0.4*scale, 3.3*scale, scale*0.6, scale*4.5);
-  }
-  if(job==='魔法使い'){
-    ctx.fillStyle = '#8a6a3a';
-    ctx.fillRect(0.4*scale, 3.6*scale, scale*0.6, scale*4.4);
-    ctx.fillStyle = '#c48af0';
-    ctx.fillRect(0.2*scale, 2.8*scale, scale, scale*0.9);
-  }
-  if(job==='武闘家'){
-    ctx.fillStyle = skin;
-    ctx.fillRect(0.2*scale, 5.4*scale, scale*0.8, scale*0.8);
-    ctx.fillRect((W-1)*scale+scale*0.1, 5.4*scale, scale*0.8, scale*0.8);
-  }
+  // 職業ごとの小物（レベルが上がるほど装備が豪華になる）
+  const prop = (x,y,w,h,c)=>{ ctx.fillStyle=c; ctx.fillRect(x*scale, y*scale, w*scale, h*scale); };
+  if(job==='見習い'){ prop(0.4,5,0.6,0.6,'#f0d34a'); }
+  if(job==='村人'){ prop(0.4,5,0.6,3,'#8a6a3a'); }
+  if(job==='兵士'){ prop(0.4,2.4,0.6,0.9,'#c9ccd4'); prop(0.4,3.3,0.6,4.5,'#8a6a3a'); }
+  if(job==='剣士'){ prop(0.4,2.2,0.6,3.2,'#e8ecf4'); prop(0,5.4,1.4,0.6,'#8a6a3a'); }
+  if(job==='魔法使い'){ prop(0.4,3.6,0.6,4.4,'#8a6a3a'); prop(0.2,2.8,1,0.9,'#c48af0'); }
+  if(job==='騎士'){ prop(0.4,2.2,0.6,3.2,'#e8ecf4'); prop(7.6,4.2,1.4,2.4,'#5b6b85'); prop(7.9,4.6,0.8,1.6,'#ffd166'); }
+  if(job==='武闘家'){ prop(0.2,5.4,0.8,0.8,skin); prop(W-1+0.1,5.4,0.8,0.8,skin); prop(2,4.4,5,0.4,'#1c1c1c'); }
+  if(job==='賢者'){ prop(0.4,2.6,0.6,5.4,'#c9a86a'); prop(0.1,1.8,1.2,1,'#7ec850'); }
+  if(job==='英雄'){ prop(0.4,2.2,0.6,3.2,'#ffd166'); prop(0,5.4,1.4,0.6,'#e0a53f'); prop(1,4,0.6,4,'#b8402a'); prop(7.4,4,0.6,4,'#b8402a'); }
   if(job==='勇者'){
-    ctx.fillStyle = '#e8ecf4';
-    ctx.fillRect(0.4*scale, 2.2*scale, scale*0.6, scale*3.2);
-    ctx.fillStyle = '#e0a53f';
-    ctx.fillRect(0, 5.4*scale, scale*1.4, scale*0.6);
+    prop(0.4,2.2,0.6,3.2,'#e8ecf4'); prop(0,5.4,1.4,0.6,'#e0a53f');
+    prop(2.2,0,0.6,0.6,'#fff3b0'); prop(4.2,0,0.6,0.6,'#fff3b0'); prop(6.2,0,0.6,0.6,'#fff3b0');
     ctx.strokeStyle = '#ffd166';
     ctx.lineWidth = Math.max(1, scale*0.18);
     ctx.strokeRect(0.5, 0.5, canvas.width-1, canvas.height-1);
@@ -1120,27 +1145,266 @@ function drawBars(canvas, labels, values, color){
   });
 }
 
+// ---------- 納期（2日分）チェック ----------
+function noukiMembers(){ return employees.filter(e=>!e.partTime); }
+function noukiMissCount(empId){
+  const mk = todayStr().slice(0,7);
+  let total=0, month=0;
+  Object.keys(noukiByDate).forEach(ds=>{
+    const c = (noukiByDate[ds].checks||{})[empId];
+    if(c===false){ total++; if(ds.slice(0,7)===mk) month++; }
+  });
+  return {total, month};
+}
+async function writeNoukiDay(date, rec){
+  try{
+    await withTimeout(setDoc(doc(db,'skilllog','nouki_'+monthOf(date)), {value:{[date]: rec}}, {merge:true}), 7000);
+    return true;
+  }catch(e){ console.error('writeNoukiDay failed', e); return false; }
+}
+function dayRate(ds){
+  const rec = noukiByDate[ds]; if(!rec) return null;
+  const ids = noukiMembers().map(e=>e.id).filter(id=> id in (rec.checks||{}));
+  if(!ids.length) return null;
+  const ok = ids.filter(id=> rec.checks[id]===true).length;
+  return {ok, n:ids.length, pct: Math.round(ok/ids.length*100)};
+}
+function rateColor(p){ return p>=90 ? 'var(--xp)' : p>=70 ? 'var(--amber)' : 'var(--danger)'; }
+function renderNouki(){
+  if(!$('#noukiAlert')) return;
+  // ① 未達成の累計（アプリの一番上）
+  const rows = noukiMembers().map(e=>({e, c:noukiMissCount(e.id)})).filter(r=>r.c.total>0).sort((a,b)=> b.c.total-a.c.total);
+  const alert = $('#noukiAlert');
+  alert.classList.toggle('ok', !rows.length);
+  alert.innerHTML = rows.length
+    ? `<h2 style="color:var(--danger)">⚠ 納期（2日分）未達成の累計</h2>
+       <div class="miss-chips">${rows.map(r=>`<span class="miss-chip">${escapeHtml(r.e.name)}<b>${r.c.total}回</b>${r.c.month? '<small style="color:var(--dim)">（今月'+r.c.month+'）</small>':''}</span>`).join('')}</div>`
+    : `<h2 style="color:var(--xp)">🏆 納期（2日分）未達成 0人</h2><div style="font-size:12px;color:var(--dim)">全員が納期を守れています。この調子！</div>`;
+
+  // ② 今日の納期メーター（誰でも見られる）
+  const today = todayStr();
+  const r = dayRate(today);
+  const rec = noukiByDate[today];
+  const meter = $('#noukiMeter');
+  let h = `<h2>📦 今日の納期メーター　<span style="font-size:12px;color:var(--dim)">${prettyDate(today)}</span></h2>`;
+  if(r){
+    h += `<div class="meter-big"><span class="num">${r.ok}</span><span class="den">/ ${r.n}人 達成</span><span class="pc" style="color:${rateColor(r.pct)}">${r.pct}%</span></div>
+      <div class="meter"><i style="width:${r.pct}%;background:${rateColor(r.pct)}"></i></div>
+      <div class="who">${noukiMembers().filter(e=> e.id in rec.checks).map(e=>`<span class="${rec.checks[e.id]?'y':'n'}">${rec.checks[e.id]?'✓':'✗'} ${escapeHtml(e.name)}</span>`).join('')}</div>`;
+  } else {
+    h += `<div class="empty" style="padding:12px 4px;">まだ今日のチェックがありません。<br>日直さん、下のチェック欄から入力してください。</div>`;
+  }
+  // 直近7日
+  h += '<div class="week7">';
+  for(let i=6;i>=0;i--){
+    const ds = dateStrAdd(today,-i); const dr = dayRate(ds);
+    h += `<div><div class="bar">${dr? `<i style="height:${Math.max(4,dr.pct)}%;background:${rateColor(dr.pct)}"></i>`:''}</div>${prettyDate(ds).replace(/\(.\)/,'')}<br>${dr? dr.pct+'%':'－'}</div>`;
+  }
+  h += '</div>';
+  // 今月の達成率
+  const mk = today.slice(0,7); let ok=0,n=0;
+  Object.keys(noukiByDate).filter(ds=>ds.slice(0,7)===mk).forEach(ds=>{ const dr=dayRate(ds); if(dr){ ok+=dr.ok; n+=dr.n; } });
+  if(n) h += `<div style="font-size:12px;color:var(--dim);margin-top:10px;">今月のチーム達成率 <b style="color:${rateColor(Math.round(ok/n*100))}">${Math.round(ok/n*100)}%</b></div>`;
+  meter.innerHTML = h;
+
+  renderNoukiForm();
+}
+function renderNoukiForm(){
+  const dateEl = $('#nkDate'); if(!dateEl) return;
+  if(!dateEl.value) dateEl.value = todayStr();
+  const date = dateEl.value;
+  const rec = noukiByDate[date];
+  const duty = $('#nkDuty');
+  const prevDuty = duty.value;
+  duty.innerHTML = '<option value="">－ 選択 －</option>' + employees.map(e=>`<option value="${escapeHtml(e.name)}">${escapeHtml(e.name)}</option>`).join('');
+  duty.value = rec && rec.by ? rec.by : (prevDuty || '');
+  const list = $('#nkList');
+  list.innerHTML = noukiMembers().map(e=>{
+    const on = rec ? rec.checks[e.id]===true : false;
+    return `<label class="nk-item ${on?'on':''}"><input type="checkbox" data-id="${e.id}" ${on?'checked':''}>${escapeHtml(e.name)}</label>`;
+  }).join('') || '<div class="empty">社員未登録</div>';
+  $$('input[type=checkbox]', list).forEach(cb=> cb.addEventListener('change', ()=> cb.parentElement.classList.toggle('on', cb.checked)));
+  $('#nkSaved').textContent = rec ? `保存済み（日直: ${rec.by||'－'}）。直して保存し直すこともできます。` : 'まだ保存されていません';
+}
+async function saveNouki(){
+  const date = $('#nkDate').value || todayStr();
+  const by = $('#nkDuty').value;
+  if(!by){ alert('今日の日直を選んでください'); return; }
+  const checks = {};
+  $$('#nkList input[type=checkbox]').forEach(cb=> checks[cb.dataset.id] = cb.checked);
+  const rec = {checks, by, at: new Date().toISOString()};
+  const ok = await writeNoukiDay(date, rec);
+  if(!ok){ alert('保存に失敗しました。通信状況を確認してください。'); return; }
+  noukiByDate[date] = rec;
+  renderRoster();
+  const miss = Object.values(checks).filter(v=>!v).length;
+  showToast(miss ? '保存しました（未達成 '+miss+'人）' : '保存しました（全員達成！）');
+}
+
+// ---------- 役職ミッションボード ----------
+// 初期の項目（設定タブで社長が書き換えられる）
+function defaultRoles(){
+  return {roles:[
+    {key:'bucho', label:'部長', holder:'', items:[
+      '朝礼:今日の方針と安全の注意を伝える',
+      '日中:課長・主任から進み具合の報告を受け、判断する',
+      '日中:2日先までの納期と工程を確認する',
+      '日中:社長・取引先へ必要な報告をする',
+      '終礼:課長・主任に今日のフィードバックを1つずつ伝える'
+    ]},
+    {key:'kacho', label:'課長', holder:'', items:[
+      '朝礼:今日の段取りと人の配置を伝える',
+      '日中:昼と終業前に各チームの進み具合を確認する',
+      '日中:遅れがあれば原因をつかんで部長に報告する',
+      '日中:主任・若手に作業のやり方を1つ教える',
+      '終礼:今日の結果と明日の段取りを伝える'
+    ]},
+    {key:'shunin', label:'主任', holder:'', items:[
+      '朝礼:担当チームの作業分担を伝える',
+      '日中:材料・道具の準備ができているか確認する',
+      '日中:若手の作業をチェックして声をかける',
+      '日中:品質（寸法・本数）をチェックする',
+      '終礼:担当分の進み具合を報告する'
+    ]}
+  ]};
+}
+function parseItem(t){
+  const m = /^(朝礼|日中|終礼)\s*[:：]\s*(.*)$/.exec(t);
+  return m ? {when:m[1], text:m[2]} : {when:'', text:t};
+}
+async function writeMissionDay(date, roleKey, done){
+  try{
+    await withTimeout(setDoc(doc(db,'skilllog','missions_'+monthOf(date)), {value:{[date]:{[roleKey]: done}}}, {merge:true}), 7000);
+    return true;
+  }catch(e){ console.error('writeMissionDay failed', e); return false; }
+}
+function roleRate(roleKey, nItems, ds){
+  const d = ((missionsByDate[ds]||{})[roleKey])||{};
+  const done = Object.keys(d).filter(k=> d[k]===true && Number(k)<nItems).length;
+  return {done, n:nItems};
+}
+function renderMissions(){
+  const body = $('#missionBody'); if(!body || !rolesConfig) return;
+  const dateEl = $('#msDate');
+  if(!dateEl.value) dateEl.value = todayStr();
+  const date = dateEl.value;
+  body.innerHTML = rolesConfig.roles.map(role=>{
+    const items = role.items.map(parseItem);
+    const r = roleRate(role.key, items.length, date);
+    const pct = items.length ? Math.round(r.done/items.length*100) : 0;
+    const done = ((missionsByDate[date]||{})[role.key])||{};
+    let lastWhen = null, list = '';
+    items.forEach((it,i)=>{
+      if(it.when && it.when!==lastWhen){ list += `<div class="when-h">${it.when==='朝礼'?'🌅':it.when==='終礼'?'🌇':'🔧'} ${it.when}</div>`; lastWhen = it.when; }
+      const on = done[i]===true;
+      list += `<label class="ms-item ${on?'on':''}"><input type="checkbox" data-role="${role.key}" data-i="${i}" ${on?'checked':''}><span>${escapeHtml(it.text)}</span></label>`;
+    });
+    // 直近7日の達成率
+    let wd=0, wn=0;
+    for(let k=0;k<7;k++){ const ds = dateStrAdd(date,-k); if(missionsByDate[ds] && missionsByDate[ds][role.key]){ const rr = roleRate(role.key, items.length, ds); wd+=rr.done; wn+=rr.n; } }
+    return `<div class="card role-card">
+      <h2>${role.key==='bucho'?'🦁':role.key==='kacho'?'🐺':'🦊'} ${escapeHtml(role.label)}<span class="holder">担当：${escapeHtml(role.holder||'未設定')}</span></h2>
+      <div class="role-prog"><div class="meter"><i style="width:${pct}%;background:${rateColor(pct)}"></i></div><b>${r.done}/${items.length}</b></div>
+      ${list || '<div class="empty">項目が未設定です（設定タブで追加）</div>'}
+      <div class="ms-week">直近7日の達成率：${wn? '<b style="color:'+rateColor(Math.round(wd/wn*100))+'">'+Math.round(wd/wn*100)+'%</b>' : '記録なし'}</div>
+    </div>`;
+  }).join('');
+  $$('.ms-item input', body).forEach(cb=>{
+    cb.addEventListener('change', async ()=>{
+      const roleKey = cb.dataset.role, i = cb.dataset.i;
+      const d = $('#msDate').value || todayStr();
+      if(!missionsByDate[d]) missionsByDate[d] = {};
+      const cur = Object.assign({}, missionsByDate[d][roleKey]||{});
+      cur[i] = cb.checked;
+      missionsByDate[d][roleKey] = cur;
+      cb.parentElement.classList.toggle('on', cb.checked);
+      const ok = await writeMissionDay(d, roleKey, {[i]: cb.checked});
+      if(!ok){ alert('保存に失敗しました。通信状況を確認してください。'); }
+      renderMissions();
+    });
+  });
+}
+function renderRoleSettings(){
+  const box = $('#roleEditList'); if(!box || !rolesConfig) return;
+  box.innerHTML = rolesConfig.roles.map(role=>`
+    <div class="role-edit" data-key="${role.key}">
+      <div class="rl">${escapeHtml(role.label)}</div>
+      <label class="f">担当者の名前</label>
+      <input type="text" data-f="holder" value="${escapeHtml(role.holder||'')}" placeholder="例）山﨑">
+      <label class="f">毎日のやること（1行に1つ）</label>
+      <textarea data-f="items" rows="6">${escapeHtml(role.items.join('\n'))}</textarea>
+    </div>`).join('');
+}
+async function saveRoles(){
+  $$('#roleEditList .role-edit').forEach(el=>{
+    const role = rolesConfig.roles.find(r=>r.key===el.dataset.key);
+    role.holder = $('[data-f="holder"]', el).value.trim();
+    role.items = $('[data-f="items"]', el).value.split('\n').map(t=>t.trim()).filter(Boolean);
+  });
+  const ok = await storeSet('roles', rolesConfig);
+  if(!ok){ alert('保存に失敗しました'); return; }
+  renderMissions(); showToast('役職ミッションを保存しました');
+}
+
+// ---------- 多能工スキルマップ（試験運用） ----------
+function defaultSkillMap(){ return {procs:['切断','曲げ','組立','結束','PC製品','積込・出荷'], lv:{}}; }
+function renderSkillMap(){
+  const box = $('#skillBody'); if(!box || !skillMap) return;
+  const members = noukiMembers();
+  const procs = skillMap.procs;
+  const lvOf = (id,pi)=> ((skillMap.lv[id]||{})[procs[pi]])||0;
+  let h = '<div class="skill-wrap"><table class="skill"><tr><th></th>' + procs.map(p=>`<th>${escapeHtml(p)}</th>`).join('') + '</tr>';
+  members.forEach(e=>{
+    h += `<tr><td class="nm">${escapeHtml(e.name)}</td>` + procs.map((p,pi)=>{ const v=lvOf(e.id,pi); return `<td class="cell ${v?'':'z'}" data-id="${e.id}" data-p="${pi}">${v? '★'.repeat(v) : '・'}</td>`; }).join('') + '</tr>';
+  });
+  h += '<tr class="sum"><td class="nm" style="font-size:11px;color:var(--dim)">一人でできる人</td>' + procs.map((p,pi)=>{
+    const n = members.filter(e=> lvOf(e.id,pi)>=2).length;
+    return `<td class="${n<2?'warn':''}">${n}人${n<2?'<br>要育成':''}</td>`;
+  }).join('') + '</tr></table></div>';
+  box.innerHTML = h;
+  $$('td.cell', box).forEach(td=>{
+    td.addEventListener('click', ()=> requireRole(['boss','teamA','teamB'], async ()=>{
+      const id = td.dataset.id, proc = procs[Number(td.dataset.p)];
+      if(!skillMap.lv[id]) skillMap.lv[id] = {};
+      skillMap.lv[id][proc] = ((skillMap.lv[id][proc]||0)+1) % 4;
+      renderSkillMap();
+      const ok = await storeSet('skillmap', skillMap);
+      if(!ok) alert('保存に失敗しました');
+    }));
+  });
+}
+
 // ---------- rendering ----------
+function jobLadderHtml(curLv){
+  let h = '<div class="ladder">';
+  for(let n=1;n<=10;n++){
+    const cls = n<curLv ? 'done' : n===curLv ? 'now' : '';
+    h += `<div class="rung ${cls}"><span class="ic">${JOB_ICON[n]}</span><span class="lvn">Lv.${n}</span><span class="jn">${JOBS[n]}</span><span class="need">${LV_EXP[n]} EXP〜</span></div>`;
+  }
+  return h + '</div>';
+}
 function renderRoster(){
+  const lad = $('#jobLadder'); if(lad) lad.innerHTML = jobLadderHtml(0);
+  renderNouki();
   const grid = $('#rosterGrid');
   grid.innerHTML='';
   if(!employees.length){ grid.innerHTML = '<div class="empty">設定タブから社員を登録してください</div>'; return; }
   employees.forEach(emp=>{
     const jb = currentJob(emp);
-    const badge = badgeFor(emp);
+    const badge = null;
     const ratio = ratioFor(emp.name);
-    const pct = Math.min(100, Math.round(((ratio||0)/30)*100)); // 30pt=勇者ラインを満タンとする
     const div = document.createElement('div');
     div.className = 'emp-card';
     div.innerHTML = `
       <div class="team-dot" style="background:${teamColor(emp.team)}"></div>
       <canvas></canvas>
-      <div class="ratio-badge">${ratio!=null ? ratio+'pt' : '－'}</div>
+      <div class="ratio-badge">${ratio!=null ? '今月 '+ratio+'%' : '－'}</div>
       <div class="nm">${escapeHtml(emp.name)}</div>
-      <div class="lv">Lv.${jb.lv} ${jb.job}${badge? '　🎖':''}</div>
-      <div class="xpbar"><i style="width:${pct}%"></i></div>
+      <div class="lv">Lv.${jb.lv} ${jb.job}</div>
+      <div class="xpbar"><i style="width:${jb.pct}%"></i></div>
+      <div class="tonext">${jb.next ? 'あと'+jb.toNext+'EXP' : 'MAX'}</div>
     `;
-    drawAvatar(div.querySelector('canvas'), emp.name, emp.team, jb.job, badge, 5, heartsFor(emp.id));
+    drawAvatar(div.querySelector('canvas'), emp.name, emp.team, jb.job, badge, 5, 0);
     div.addEventListener('click', ()=>{ currentDetailId = emp.id; switchTab('detail'); renderDetail(); });
     grid.appendChild(div);
   });
@@ -1209,8 +1473,9 @@ function renderDetail(){
   const emp = employees.find(e=>e.id===currentDetailId);
   if(!emp){ body.innerHTML = '<div class="empty">社員が見つかりません</div>'; return; }
   const jb = currentJob(emp);
-  const badge = badgeFor(emp);
+  const badge = null;
   const logs = logsForEmployee(emp.id).slice().sort((a,b)=> b.date.localeCompare(a.date));
+  const missCnt = noukiMissCount(emp.id);
 
   body.innerHTML = `
     <button class="backbtn" id="backToRoster">← 一覧へ戻る</button>
@@ -1219,11 +1484,18 @@ function renderDetail(){
         <canvas id="detCanvas"></canvas>
         <div class="meta">
           <div class="nm">${escapeHtml(emp.name)}</div>
-          <div class="lv">Lv.${jb.lv} ${jb.job}</div>
-          <div class="team">TEAM ${emp.team}${badge? '　先月: '+badge+'バッチ🎖' : ''}</div>
-          <div class="ratio-badge">${(()=>{const r=ratioFor(emp.name); return r!=null? '貢献度 '+r+'pt' : '貢献度 －';})()}</div>
+          <div class="lv">${jb.icon} Lv.${jb.lv} ${jb.job}</div>
+          <div class="team">TEAM ${emp.team}　累計 ${jb.exp} EXP</div>
+          <div class="ratio-badge">${(()=>{const r=ratioFor(emp.name); return r!=null? '今月の貢献度 '+r+'%' : '今月の貢献度 －';})()}</div>
         </div>
       </div>
+      <div class="xpbar" style="height:8px;margin-top:12px;"><i style="width:${jb.pct}%"></i></div>
+      <div style="font-size:12px;color:var(--dim);margin-top:6px;">${jb.next ? '次の <b style="color:var(--cream)">'+JOBS[jb.lv+1]+'</b> まで あと <b style="color:var(--xp)">'+jb.toNext+' EXP</b>' : '最高ランクに到達！'}</div>
+      <div style="font-size:12px;color:var(--dim);margin-top:4px;">納期（2日分）未達成：累計 <b style="color:${missCnt.total? 'var(--danger)':'var(--xp)'}">${missCnt.total}回</b>（今月 ${missCnt.month}回）</div>
+    </div>
+    <div class="card">
+      <h2>🗺 進化の道のり</h2>
+      ${jobLadderHtml(jb.lv)}
     </div>
     <div class="card">
       <h2>📈 能力バランス（直近30日）</h2>
@@ -1269,8 +1541,7 @@ function logHtml(l){
 function last14Dates(){
   const out=[];
   for(let i=13;i>=0;i--){
-    const d = new Date(Date.now()-i*86400000);
-    out.push(d.toISOString().slice(0,10));
+    out.push(dateStrAdd(todayStr(), -i));
   }
   return out;
 }
@@ -1335,6 +1606,9 @@ function renderSettings(){
       renderSettings(); renderPriceSettings(); renderRoster(); renderInputTab(); renderTeam(); renderPcountSettings();
     });
   });
+  renderRoleSettings();
+  if(skillMap) $('#skillProcEdit').value = skillMap.procs.join('\n');
+  $('#xpStartEdit').value = xpStart();
   $('#pinBoss').value = settings.pins.boss || '';
   $('#pinTeamA').value = settings.pins.teamA || '';
   $('#pinTeamB').value = settings.pins.teamB || '';
@@ -1352,7 +1626,8 @@ function switchTab(name){
   if(name==='detail') renderDetail();
   if(name==='pcount') renderPcountSettings();
   if(name==='comment') renderComments();
-  if(name==='detail') renderThanks();
+  if(name==='mission') renderMissions();
+  if(name==='skill') renderSkillMap();
 }
 
 // ---------- role login ----------
@@ -1406,21 +1681,30 @@ async function init(){
 
   // 能力評価ログ（このアプリ独自のデータ）は直近6ヶ月分を読み込む
   const now = new Date();
-  for(let i=0;i<6;i++){
+  const months = [];
+  for(let i=0;i<12;i++){
     const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
-    const mk = d.toISOString().slice(0,7);
-    const l = await storeGet('logs:'+mk);
-    if(l) logsByMonth[mk] = l;
+    months.push(localISO(d).slice(0,7));
   }
+  // 評価ログ（直近6ヶ月）・納期チェック（直近12ヶ月）・役職ミッション（今月と先月）を並列で読み込む
+  await Promise.all([
+    ...months.slice(0,6).map(async mk=>{ const l = await storeGet('logs:'+mk); if(l) logsByMonth[mk] = l; }),
+    ...months.map(async mk=>{ const n = await storeGet('nouki_'+mk); if(n) Object.assign(noukiByDate, n); }),
+    ...months.slice(0,2).map(async mk=>{ const m = await storeGet('missions_'+mk); if(m) Object.assign(missionsByDate, m); }),
+    (async()=>{ rolesConfig = await storeGet('roles'); })(),
+    (async()=>{ skillMap = await storeGet('skillmap'); })()
+  ]);
+  if(!rolesConfig){ rolesConfig = defaultRoles(); }
+  if(!skillMap){ skillMap = defaultSkillMap(); }
 
   $('#inpDate').value = todayStr();
   $('#pcDate').value = todayStr();
+  $('#nkDate').value = todayStr();
   populatePCountSelects();
   renderRoster();
   renderInputTab();
   renderSettings();
   renderPcountSettings();
-  renderThanks();
 
   // config/setup（単価設定）と pdata（日次P数）は「大本 P数管理」アプリと同じ場所を
   // リアルタイム購読する。どちらかのアプリで更新すれば、もう一方にも即座に反映される。
@@ -1438,27 +1722,59 @@ async function init(){
     if(currentDetailId) renderDetail();
   }, (err)=> console.error('config/setup onSnapshot error', err));
 
+  let lvChecked = false;
   onSnapshot(collection(db,'pdata'), (snapshot)=>{
     rebuildPdailyFromSnapshot(snapshot);
+    if(!lvChecked){ lvChecked = true; setTimeout(checkLevelUps, 800); }
     renderPcountSettings();
     renderRoster();
     if(currentDetailId) renderDetail();
   }, (err)=> console.error('pdata onSnapshot error', err));
 
-  onSnapshot(collection(db,'thanks'), (snapshot)=>{
-    const next = {};
-    snapshot.forEach(d=> next[d.id] = d.data());
-    thanksByDate = next;
-    renderThanksList();
-    renderRoster();
-    if(currentDetailId) renderDetail();
-  }, (err)=> console.error('thanks onSnapshot error', err));
+  // 今月の納期チェック・役職ミッションはリアルタイム同期（日直が保存すると全員の画面にすぐ反映）
+  const curMk = todayStr().slice(0,7);
+  onSnapshot(doc(db,'skilllog','nouki_'+curMk), (snap)=>{
+    if(snap.exists()){ Object.assign(noukiByDate, snap.data().value||{}); renderRoster(); if(currentDetailId) renderDetail(); }
+  }, (err)=> console.error('nouki onSnapshot error', err));
+  onSnapshot(doc(db,'skilllog','missions_'+curMk), (snap)=>{
+    if(snap.exists()){ Object.assign(missionsByDate, snap.data().value||{}); renderMissions(); }
+  }, (err)=> console.error('missions onSnapshot error', err));
+
+  // 日付の自動更新：アプリを開きっぱなしで日付が変わっても、画面に戻ったときに「今日」に合わせる
+  let lastToday = todayStr();
+  const refreshDates = ()=>{
+    const t = todayStr();
+    if(t===lastToday) return;
+    ['#inpDate','#pcDate','#nkDate','#msDate'].forEach(sel=>{ const el=$(sel); if(el && (!el.value || el.value===lastToday)) el.value = t; });
+    lastToday = t;
+    renderRoster(); renderMissions();
+  };
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) refreshDates(); });
+  setInterval(refreshDates, 60000);
+
+  $('#nkSaveBtn').addEventListener('click', saveNouki);
+  $('#msDate').value = todayStr();
+  $('#msDate').addEventListener('change', renderMissions);
+  $('#saveRolesBtn').addEventListener('click', ()=> requireRole(['boss'], saveRoles));
+  $('#saveSkillProcBtn').addEventListener('click', ()=> requireRole(['boss'], async ()=>{
+    skillMap.procs = $('#skillProcEdit').value.split('\n').map(t=>t.trim()).filter(Boolean);
+    const ok = await storeSet('skillmap', skillMap);
+    if(!ok){ alert('保存に失敗しました'); return; }
+    renderSkillMap(); showToast('工程を保存しました');
+  }));
+  $('#saveXpStartBtn').addEventListener('click', ()=> requireRole(['boss'], async ()=>{
+    const v = $('#xpStartEdit').value; if(!v) return;
+    settings.xpStart = v;
+    const ok = await storeSet('settings', settings);
+    if(!ok){ alert('保存に失敗しました'); return; }
+    renderRoster(); showToast('開始日を保存しました');
+  }));
+  $('#nkDate').addEventListener('change', renderNoukiForm);
 
   $$('.tabs button').forEach(b=> b.addEventListener('click', ()=> switchTab(b.dataset.tab)));
   $('#saveLogBtn').addEventListener('click', ()=> requireRole(['boss','teamA','teamB'], saveLog));
   $('#pcEmployee').addEventListener('change', updateSiteOptions);
   $('#pcSaveBtn').addEventListener('click', savePdaily);
-  $('#thanksSender').addEventListener('change', renderThanksList);
   $('#genCommentBtn').addEventListener('click', renderComments);
   $('#addEmpBtn').addEventListener('click', ()=> requireRole(['boss'], async ()=>{
     employees.push({id:uid(), name:'新しい社員', team:'A'});
