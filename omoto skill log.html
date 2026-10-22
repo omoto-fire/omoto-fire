@@ -901,7 +901,44 @@ function drawHeart(ctx, cx, topY, size, color){
   ctx.closePath();
   ctx.fill();
 }
+// 一人ひとりの見た目（ヘルメットの色・体型・メガネ・髪）
+// build: slim=細身 / big=大柄 / bigS=少し大柄 / tallSlim=長身・細身 / smallSlim=小柄・細身
+const LOOKS = {
+  '泉原':  {helmet:'#f4f4f4', glasses:true},
+  '城戸':  {helmet:'#e2564f', build:'slim'},
+  '都築':  {helmet:'#4d8fd6', build:'big'},
+  '杉原':  {helmet:'#7ec850', glasses:true},
+  '西崎':  {helmet:'#f0d34a', build:'smallSlim'},
+  '山﨑':  {helmet:'#ff8a3d', hair:'#0d0d0d', longHair:true},
+  '雅人':  {helmet:'#c48af0', build:'bigS'},
+  '大本汐':{helmet:'#2bb3a6', build:'tallSlim'},
+  '都田':  {helmet:'#ff8fb1', build:'slim', glasses:true},
+  '恭平':  {helmet:'#5b6b85', skin:'#dba977', hair:'#f0d34a', longHair:true},
+  '岡本':  {helmet:'#8b5a2b', skin:'#a9714f', hair:'#1c1c1c', build:'big', wide:true},
+  '尾山':  {helmet:'#9aa4b5', skin:'#e8c9a0', hair:'#e6e6e6', longHair:true, gap:true},
+  '伊藤':  {helmet:'#e85f9c', skin:'#f0c9a0', hair:'#f0d34a', longHair:true, skirt:'#e85f9c'},
+  '谷本':  {helmet:'#f5f0a0', skin:'#f0c9a0', hair:'#241a12', bob:true, skirt:'#f0d34a'},
+  '井上':  {skin:'#c88a5e', hair:'#0d0d0d', allBlack:true}
+};
+const HELMET_FALLBACK = ['#e2564f','#4d8fd6','#7ec850','#f0d34a','#c48af0','#2bb3a6','#ff8fb1','#ff8a3d'];
+const BUILD = { slim:[0.8,1], big:[1.2,1], bigS:[1.1,1], tallSlim:[0.82,1.12], smallSlim:[0.82,0.88] };
+
+// 体型の違いを出すため、いったん別のキャンバスに描いてから横幅・身長を変えて貼り付ける
 function drawAvatar(canvas, name, team, job, badge, scale, hearts){
+  scale = scale || 6;
+  const off = document.createElement('canvas');
+  drawAvatarBase(off, name, team, job, badge, scale, hearts);
+  const lk = LOOKS[name] || {};
+  const [sx, sy] = BUILD[lk.build] || [1,1];
+  const W = off.width, H = off.height;
+  canvas.width = Math.round(W*1.22); canvas.height = Math.round(H*1.12);
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const w = Math.round(W*sx), h = Math.round(H*sy);
+  ctx.drawImage(off, Math.round((canvas.width-w)/2), canvas.height-h, w, h);
+}
+function drawAvatarBase(canvas, name, team, job, badge, scale, hearts){
   scale = scale || 6;
   const ctx = canvas.getContext('2d');
   const W=9,H=12;
@@ -931,16 +968,9 @@ function drawAvatar(canvas, name, team, job, badge, scale, hearts){
   let hair = HAIR[Math.floor(rnd()*HAIR.length)];
 
   // サポートメンバー従業員は職業コスチュームより先に、個人の外見的特徴を優先する
-  const PART_TIME = {
-    '恭平': {skin:'#dba977', hair:'#f0d34a'},
-    '岡本': {skin:'#a9714f', hair:'#1c1c1c', wide:true},
-    '尾山': {skin:'#e8c9a0', hair:'#c7c7c7', gap:true},
-    '伊藤': {skin:'#f0c9a0', hair:'#f0d34a', longHair:true, skirt:'#e85f9c'},
-    '谷本': {skin:'#f0c9a0', hair:'#241a12', bob:true, skirt:'#f0d34a'},
-    '井上': {skin:'#c88a5e', hair:'#0d0d0d', allBlack:true}
-  };
-  const pt = PART_TIME[name];
-  if(pt){ skin = pt.skin; hair = pt.hair; }
+  const pt = LOOKS[name] || null;
+  if(pt){ skin = pt.skin || skin; hair = pt.hair || hair; }
+  const helmet = (pt && pt.helmet) || HELMET_FALLBACK[hashStr(name) % HELMET_FALLBACK.length];
 
   // 職業ごとの装い
   const STYLE = {
@@ -957,7 +987,7 @@ function drawAvatar(canvas, name, team, job, badge, scale, hearts){
   };
   const st = STYLE[job] || STYLE['見習い'];
   const legsColor = (pt && pt.skirt) ? pt.skirt : (pt && pt.allBlack) ? '#111111' : st.legs;
-  const hatColor  = (pt && pt.allBlack) ? '#111111' : st.hat;
+  const hatColor  = (pt && pt.allBlack) ? '#111111' : helmet; // ヘルメットは個人カラー
   const bodyColor = (pt && pt.allBlack) ? '#181818' : st.body;
 
   const colorFor = (region)=>{
@@ -1008,6 +1038,15 @@ function drawAvatar(canvas, name, team, job, badge, scale, hearts){
   ctx.fillStyle = '#241a12';
   ctx.fillRect(3*scale, 3*scale, scale*0.8, scale*0.8);
   ctx.fillRect(5*scale, 3*scale, scale*0.8, scale*0.8);
+  if(pt && pt.glasses){
+    // メガネ：目のまわりに黒ぶちのフレーム＋ブリッジ
+    ctx.strokeStyle = '#111111';
+    ctx.lineWidth = Math.max(1, scale*0.22);
+    ctx.strokeRect(2.65*scale, 2.65*scale, scale*1.5, scale*1.5);
+    ctx.strokeRect(4.85*scale, 2.65*scale, scale*1.5, scale*1.5);
+    ctx.fillStyle = '#111111';
+    ctx.fillRect(4.15*scale, 3.25*scale, scale*0.7, scale*0.22);
+  }
 
   if(pt && pt.gap){
     // 尾山：歯が一本ないニッコリ口元
